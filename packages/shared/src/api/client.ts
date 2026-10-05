@@ -1,4 +1,4 @@
-import type { z } from 'zod'
+import { z } from 'zod'
 
 import {
   type Connexion,
@@ -63,6 +63,8 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
     mettreAJour: (donnees: MiseAJourCompte) => appel(Moi, 'PATCH', '/api/comptes/moi', donnees),
     inviter: () => appel(Moi, 'POST', '/api/duos/inviter'),
     rejoindre: (code: string) => appel(Moi, 'POST', '/api/duos/rejoindre', { code }),
+    /** Ferme la session côté serveur (route d'authentification de Payload). */
+    deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }
 }
 

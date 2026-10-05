@@ -11,7 +11,7 @@ describe('codes d’invitation', () => {
   })
 
   it('formate pour l’affichage', () => {
-    expect(formaterCode('LUNE4821')).toBe('LUNE · 4821')
+    expect(formaterCode('LUNE4821')).toBe('LUNE\u00a0·\u00a04821')
   })
 
   it('valide le format après normalisation', () => {

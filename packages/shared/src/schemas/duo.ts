@@ -17,10 +17,10 @@ export function normaliserCode(saisie: string) {
     .replace(/[^A-Z0-9]/g, '')
 }
 
-/** « LUNE4821 » → « LUNE · 4821 ». */
+/** « LUNE4821 » → « LUNE · 4821 », avec des espaces insécables pour ne jamais couper le code. */
 export function formaterCode(code: string) {
   const m = /^([A-Z]+)(\d+)$/.exec(code)
-  return m ? `${m[1]} · ${m[2]}` : code
+  return m ? `${m[1]}\u00a0·\u00a0${m[2]}` : code
 }
 
 export const RejoindreDuo = z.object({
