@@ -1,5 +1,6 @@
-import { type ReactNode, useState } from 'react'
+import { type FC, type ReactNode, useState } from 'react'
 import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
 import { familles } from '@/theme/polices'
 import { couleurs } from '@/theme/tokens'
@@ -12,6 +13,8 @@ type Props = TextInputProps & {
   aide?: string
   /** Élément à droite de la saisie (ex. : afficher le mot de passe). */
   accessoire?: ReactNode
+  /** Icône à gauche de la saisie (ex. : l'indice, Figma 3.4). */
+  icone?: FC<SvgProps>
 }
 
 /**
@@ -19,7 +22,16 @@ type Props = TextInputProps & {
  * Le rouge cachet sur papier n'atteint que 4,3:1 : l'erreur s'écrit en encre,
  * et le rouge ne sert qu'à la bordure et à la pastille.
  */
-export function Champ({ libelle, erreur, aide, accessoire, onFocus, onBlur, ...props }: Props) {
+export function Champ({
+  libelle,
+  erreur,
+  aide,
+  accessoire,
+  icone: Icone,
+  onFocus,
+  onBlur,
+  ...props
+}: Props) {
   const [focus, setFocus] = useState(false)
   return (
     <View style={styles.bloc}>
@@ -27,6 +39,7 @@ export function Champ({ libelle, erreur, aide, accessoire, onFocus, onBlur, ...p
         {libelle.toUpperCase()}
       </Texte>
       <View style={[styles.cadre, focus && styles.focus, erreur ? styles.enErreur : null]}>
+        {Icone ? <Icone width={18} height={18} color={couleurs.texte.encreDouce} /> : null}
         <TextInput
           accessibilityLabel={libelle}
           accessibilityHint={erreur ?? aide}
@@ -74,6 +87,7 @@ const styles = StyleSheet.create({
     borderColor: couleurs.trait.ligne,
     backgroundColor: couleurs.fond.carte,
     paddingHorizontal: 16,
+    gap: 10,
   },
   focus: {
     borderColor: couleurs.texte.encre,
