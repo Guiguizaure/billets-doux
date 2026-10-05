@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 
 import Boite from '@/assets/icons/Boite.svg'
+import Calendrier from '@/assets/icons/Calendrier.svg'
 import Frequence from '@/assets/icons/Frequence.svg'
 import Lecture from '@/assets/icons/Lecture.svg'
 import Mot from '@/assets/icons/Mot.svg'
@@ -43,7 +44,8 @@ export default function EcranVocal() {
     void demarrer()
   }, [demarrer])
 
-  const valider = async () => {
+  /** `programmer` : rangé dans la réserve puis ouvert directement dans l'écran 3.5. */
+  const valider = async (programmer = false) => {
     if (!uri) return
     if (duree < 1) {
       setErreur('Ce vocal est trop court. Recommence en parlant un peu plus longtemps.')
@@ -53,9 +55,14 @@ export default function EcranVocal() {
     setEnvoi(0)
     try {
       const vocal = await televerser({ nature: 'vocal', uri, duree }, setEnvoi)
-      if (joindre) boiteAuxLettres.deposerVocal(vocal)
-      else await api.creerBrouillon({ type: 'vocal', vocal: vocal.id })
-      revenir()
+      if (joindre) {
+        boiteAuxLettres.deposerVocal(vocal)
+        revenir()
+        return
+      }
+      const mot = await api.creerBrouillon({ type: 'vocal', vocal: vocal.id })
+      if (programmer) router.replace({ pathname: '/programmer', params: { id: mot.id } })
+      else revenir()
     } catch (e) {
       setErreur(messageErreur(e))
       setEnvoi(null)
@@ -125,21 +132,36 @@ export default function EcranVocal() {
     <Ecran
       enTete={<EnTete titre="Nouveau vocal" retour={revenir} />}
       actions={
-        termine ? (
+        !termine ? null : envoi !== null ? (
+          <Bouton libelle={`Envoi… ${Math.round(envoi * 100)} %`} pleineLargeur enCours />
+        ) : joindre ? (
           <Bouton
-            libelle={
-              envoi !== null
-                ? `Envoi… ${Math.round(envoi * 100)} %`
-                : joindre
-                  ? 'Joindre au mot'
-                  : 'Dans la réserve'
-            }
-            Icone={joindre ? Mot : Boite}
+            libelle="Joindre au mot"
+            Icone={Mot}
             pleineLargeur
-            enCours={envoi !== null}
             onPress={() => void valider()}
           />
-        ) : null
+        ) : (
+          <View style={styles.actions}>
+            <View style={styles.action}>
+              <Bouton
+                libelle="Dans la réserve"
+                Icone={Boite}
+                variante="secondaire"
+                pleineLargeur
+                onPress={() => void valider()}
+              />
+            </View>
+            <View style={styles.action}>
+              <Bouton
+                libelle="Programmer"
+                Icone={Calendrier}
+                pleineLargeur
+                onPress={() => void valider(true)}
+              />
+            </View>
+          </View>
+        )
       }
     >
       <View style={styles.contenu}>
@@ -241,6 +263,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 36,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  action: {
+    flex: 1,
   },
   carre: {
     width: 26,

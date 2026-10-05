@@ -198,6 +198,7 @@ export default function Reserve() {
               key={mot.id}
               mot={mot}
               onPress={() => router.push({ pathname: '/ecrire', params: { id: mot.id } })}
+              onProgrammer={() => router.push({ pathname: '/programmer', params: { id: mot.id } })}
             />
           ))}
         </View>
