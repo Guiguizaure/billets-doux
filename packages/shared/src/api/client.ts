@@ -18,6 +18,8 @@ import {
   VueMedia,
   VueMotAuteur,
 } from '../schemas/mots'
+import { CalendrierAuteur, MotProgramme, type Programmation } from '../schemas/programmation'
+import type { Rythme } from '../enums'
 import { CorpsErreur, ErreurApi, MESSAGE_RESEAU } from './erreurs'
 
 type Options = {
@@ -84,6 +86,13 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
       appel(Televersement, 'POST', '/api/medias/televersement', demande),
     confirmerMedia: (id: string) => appel(VueMedia, 'POST', `/api/medias/${id}/confirmer`),
     lireMedia: (id: string) => appel(LectureMedia, 'GET', `/api/medias/${id}/lecture`),
+    calendrier: () => appel(CalendrierAuteur, 'GET', '/api/mots/calendrier'),
+    programmer: (id: string, programmation: Programmation) =>
+      appel(MotProgramme, 'POST', `/api/mots/${id}/programmation`, programmation),
+    remettreEnReserve: (id: string) =>
+      appel(VueMotAuteur, 'DELETE', `/api/mots/${id}/programmation`),
+    changerRythme: (rythme: Rythme) =>
+      appel(CalendrierAuteur, 'PATCH', '/api/mots/calendrier/rythme', { rythme }),
     /** Ferme la session côté serveur (route d'authentification de Payload). */
     deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }
