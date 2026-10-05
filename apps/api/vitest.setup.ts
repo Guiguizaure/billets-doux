@@ -7,3 +7,6 @@ process.env.DATABASE_URI = uri.replace(/\/billets-doux(?=\?|$)/, '/billets-doux-
 if (!process.env.DATABASE_URI.includes('/billets-doux-test')) {
   throw new Error('Tests : DATABASE_URI doit pointer vers la base locale billets-doux.')
 }
+
+// Médias : bucket dédié aux tests (créé par les tests eux-mêmes, cf. preparerBucket).
+process.env.S3_BUCKET = 'billets-doux-medias-test'

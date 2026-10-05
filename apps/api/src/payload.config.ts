@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url'
 
 import { Admins } from './collections/Admins'
 import { Duos } from './collections/Duos'
+import { Medias } from './collections/Medias'
+import { Mots } from './collections/Mots'
 import { Users } from './collections/Users'
 import { comptesEndpoints } from './endpoints/comptes'
 import { health } from './endpoints/health'
@@ -32,7 +34,7 @@ export default buildConfig({
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',
   },
-  collections: [Admins, Users, Duos],
+  collections: [Admins, Users, Duos, Mots, Medias],
   endpoints: [health, ...comptesEndpoints],
   cors: corsOrigins,
   csrf: corsOrigins,

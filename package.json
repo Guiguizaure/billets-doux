@@ -6,8 +6,8 @@
     "node": ">=22"
   },
   "scripts": {
-    "db:up": "docker compose up -d --wait mongo",
-    "db:down": "docker compose stop mongo",
+    "db:up": "docker compose up -d --wait mongo s3 && pnpm --filter @billets-doux/api stockage:preparer",
+    "db:down": "docker compose stop mongo s3",
     "dev:api": "pnpm --filter @billets-doux/api dev",
     "dev:mobile": "pnpm --filter @billets-doux/mobile start",
     "typecheck": "pnpm -r typecheck",

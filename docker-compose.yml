@@ -24,5 +24,24 @@ services:
       retries: 20
       start_period: 5s
 
+  # Stockage des médias en développement : SeaweedFS, compatible S3 comme Cloudflare R2.
+  # (MinIO ne publie plus d'image Docker.) Identifiants locaux uniquement, dans infra/seaweedfs.
+  # Exposé sur le réseau local : le téléphone envoie ses fichiers directement ici.
+  s3:
+    image: chrislusf/seaweedfs:latest
+    container_name: billets-doux-s3
+    command: ['server', '-dir=/data', '-s3', '-s3.port=8333', '-s3.config=/etc/seaweedfs/s3.json']
+    ports:
+      - '8333:8333'
+    volumes:
+      - s3-data:/data
+      - ./infra/seaweedfs/s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://127.0.0.1:8333/healthz || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
 volumes:
   mongo-data:
+  s3-data:

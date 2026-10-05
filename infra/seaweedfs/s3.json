@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "billets-doux",
+      "credentials": [{ "accessKey": "billets-doux", "secretKey": "billets-doux-local" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

@@ -7,6 +7,17 @@ import {
   Moi,
   Session,
 } from '../schemas/comptes'
+import {
+  type DemandeTeleversement,
+  LectureMedia,
+  type ModificationBrouillon,
+  type NouveauBrouillon,
+  Reserve,
+  Suppression,
+  Televersement,
+  VueMedia,
+  VueMotAuteur,
+} from '../schemas/mots'
 import { CorpsErreur, ErreurApi, MESSAGE_RESEAU } from './erreurs'
 
 type Options = {
@@ -22,7 +33,7 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
 
   async function appel<S extends z.ZodType>(
     schema: S,
-    methode: 'GET' | 'POST' | 'PATCH',
+    methode: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     chemin: string,
     corps?: unknown,
   ): Promise<z.infer<S>> {
@@ -63,6 +74,16 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
     mettreAJour: (donnees: MiseAJourCompte) => appel(Moi, 'PATCH', '/api/comptes/moi', donnees),
     inviter: () => appel(Moi, 'POST', '/api/duos/inviter'),
     rejoindre: (code: string) => appel(Moi, 'POST', '/api/duos/rejoindre', { code }),
+    reserve: () => appel(Reserve, 'GET', '/api/mots/reserve'),
+    creerBrouillon: (mot: NouveauBrouillon) =>
+      appel(VueMotAuteur, 'POST', '/api/mots/brouillons', mot),
+    modifierBrouillon: (id: string, modification: ModificationBrouillon) =>
+      appel(VueMotAuteur, 'PATCH', `/api/mots/brouillons/${id}`, modification),
+    supprimerBrouillon: (id: string) => appel(Suppression, 'DELETE', `/api/mots/brouillons/${id}`),
+    demanderTeleversement: (demande: DemandeTeleversement) =>
+      appel(Televersement, 'POST', '/api/medias/televersement', demande),
+    confirmerMedia: (id: string) => appel(VueMedia, 'POST', `/api/medias/${id}/confirmer`),
+    lireMedia: (id: string) => appel(LectureMedia, 'GET', `/api/medias/${id}/lecture`),
     /** Ferme la session côté serveur (route d'authentification de Payload). */
     deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }
