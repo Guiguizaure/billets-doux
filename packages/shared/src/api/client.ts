@@ -19,7 +19,8 @@ import {
   VueMotAuteur,
 } from '../schemas/mots'
 import { CalendrierAuteur, MotProgramme, type Programmation } from '../schemas/programmation'
-import type { Rythme } from '../enums'
+import { CalendrierDestinataire, MotOuvert, type Repondre, VueReponse } from '../schemas/reception'
+import type { Reaction, Rythme } from '../enums'
 import { CorpsErreur, ErreurApi, MESSAGE_RESEAU } from './erreurs'
 
 type Options = {
@@ -35,7 +36,7 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
 
   async function appel<S extends z.ZodType>(
     schema: S,
-    methode: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    methode: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
     chemin: string,
     corps?: unknown,
   ): Promise<z.infer<S>> {
@@ -93,6 +94,14 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
       appel(VueMotAuteur, 'DELETE', `/api/mots/${id}/programmation`),
     changerRythme: (rythme: Rythme) =>
       appel(CalendrierAuteur, 'PATCH', '/api/mots/calendrier/rythme', { rythme }),
+    pourMoi: () => appel(CalendrierDestinataire, 'GET', '/api/mots/pour-moi'),
+    ouvrir: (id: string, joker = false) =>
+      appel(MotOuvert, 'POST', `/api/mots/${id}/ouverture`, { joker }),
+    lireMot: (id: string) => appel(MotOuvert, 'GET', `/api/mots/${id}/lecture`),
+    reagir: (id: string, reaction: Reaction | null) =>
+      appel(VueReponse, 'PUT', `/api/mots/${id}/reaction`, { reaction }),
+    repondre: (id: string, reponse: Repondre) =>
+      appel(VueReponse, 'POST', `/api/mots/${id}/reponse`, reponse),
     /** Ferme la session côté serveur (route d'authentification de Payload). */
     deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }

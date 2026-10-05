@@ -10,6 +10,11 @@ export const LIMITES = {
   vocalSecondes: 180,
   /** ~1,5 Mo attendus à 64 kbit/s ; marge pour les débits variables. */
   vocalOctets: 4 * 1024 * 1024,
+  /** Réponse à un mot : un mot court ou un vocal de 30 s. */
+  reponseTexte: 140,
+  reponseVocalSecondes: 30,
+  /** Un joker par mois et par destinataire. */
+  jokersParMois: 1,
 } as const
 
 /** Types de fichiers acceptés par nature de média. */

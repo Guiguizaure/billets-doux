@@ -33,3 +33,13 @@ export function quandNote(iso: string, maintenant = new Date()) {
   if (ecart < 7) return JOURS[date.getDay()] ?? ''
   return `le ${date.getDate()} ${MOIS[date.getMonth()]}`
 }
+
+/**
+ * Compte à rebours d'une case scellée, d'aujourd'hui (chez le destinataire) au jour du mot :
+ * « aujourd'hui », « demain », « dans 4 jours » ; `court` pour les cases (« dans 4 j »).
+ */
+export function compteARebours(jours: number, court = false) {
+  if (jours <= 0) return 'aujourd’hui'
+  if (jours === 1) return 'demain'
+  return court ? `dans ${jours} j` : `dans ${jours} jours`
+}
