@@ -4,6 +4,8 @@ import { createLocalReq, getPayload, type Payload } from 'payload'
 
 import config from '@/payload.config'
 import { inscrire } from '@/services/comptes'
+import { inviter, rejoindre } from '@/services/duos'
+import { vueMoi } from '@/services/comptes'
 
 export async function demarrer() {
   const payload = await getPayload({ config: await config })
@@ -12,6 +14,8 @@ export async function demarrer() {
 
 /** Vide les collections de l'appli (base de test uniquement, cf. vitest.setup.ts). */
 export async function viderBase(payload: Payload) {
+  await payload.db.deleteMany({ collection: 'mots', where: {} })
+  await payload.db.deleteMany({ collection: 'medias', where: {} })
   await payload.db.deleteMany({ collection: 'duos', where: {} })
   await payload.db.deleteMany({ collection: 'users', where: {} })
 }
@@ -35,3 +39,15 @@ export async function nouvelUtilisateur(payload: Payload, prenom: string) {
 
 /** Une requête locale neuve (chaque appel de service a la sienne, comme en HTTP). */
 export const requete = (payload: Payload) => createLocalReq({}, payload)
+
+/** Deux personnes inscrites et réunies en duo. */
+export async function duoForme(payload: Payload, prenomA = 'Lina', prenomB = 'Leo') {
+  const a = await nouvelUtilisateur(payload, prenomA)
+  const b = await nouvelUtilisateur(payload, prenomB)
+  await inviter(await requete(payload), a.id)
+  const vue = await vueMoi(await requete(payload), a.id, 'http://api')
+  const code = vue.duo?.invitation?.code
+  if (!code) throw new Error('Pas de code')
+  await rejoindre(await requete(payload), b.id, code)
+  return { a, b }
+}

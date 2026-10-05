@@ -71,6 +71,8 @@ export interface Config {
     admins: Admin;
     users: User;
     duos: Duo;
+    mots: Mot;
+    medias: Media;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,6 +83,8 @@ export interface Config {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     duos: DuosSelect<false> | DuosSelect<true>;
+    mots: MotsSelect<false> | MotsSelect<true>;
+    medias: MediasSelect<false> | MediasSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -228,6 +232,49 @@ export interface Duo {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mots".
+ */
+export interface Mot {
+  id: string;
+  duo: string | Duo;
+  auteur: string | User;
+  destinataire: string | User;
+  type: 'mot' | 'poeme' | 'photo' | 'vocal';
+  titre?: string | null;
+  texte?: string | null;
+  indice?: string | null;
+  manuscrit?: boolean | null;
+  photo?: (string | null) | Media;
+  vocal?: (string | null) | Media;
+  mode: 'date' | 'semaine_hasard' | 'ouvre_quand' | 'brouillon';
+  unlockAt?: string | null;
+  titreOuvreQuand?: string | null;
+  statut: 'brouillon' | 'programme' | 'ouvert';
+  openedAt?: string | null;
+  ouvertAvecJoker?: boolean | null;
+  notifiedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medias".
+ */
+export interface Media {
+  id: string;
+  proprietaire: string | User;
+  duo: string | Duo;
+  nature: 'photo' | 'vocal';
+  cle: string;
+  mime: string;
+  taille: number;
+  duree?: number | null;
+  statut: 'en_attente' | 'pret';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -261,6 +308,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'duos';
         value: string | Duo;
+      } | null)
+    | ({
+        relationTo: 'mots';
+        value: string | Mot;
+      } | null)
+    | ({
+        relationTo: 'medias';
+        value: string | Media;
       } | null);
   globalSlug?: string | null;
   user:
@@ -396,6 +451,47 @@ export interface DuosSelect<T extends boolean = true> {
         rythme?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "mots_select".
+ */
+export interface MotsSelect<T extends boolean = true> {
+  duo?: T;
+  auteur?: T;
+  destinataire?: T;
+  type?: T;
+  titre?: T;
+  texte?: T;
+  indice?: T;
+  manuscrit?: T;
+  photo?: T;
+  vocal?: T;
+  mode?: T;
+  unlockAt?: T;
+  titreOuvreQuand?: T;
+  statut?: T;
+  openedAt?: T;
+  ouvertAvecJoker?: T;
+  notifiedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "medias_select".
+ */
+export interface MediasSelect<T extends boolean = true> {
+  proprietaire?: T;
+  duo?: T;
+  nature?: T;
+  cle?: T;
+  mime?: T;
+  taille?: T;
+  duree?: T;
+  statut?: T;
   updatedAt?: T;
   createdAt?: T;
 }
