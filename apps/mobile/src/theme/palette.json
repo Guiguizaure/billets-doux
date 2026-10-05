@@ -1,0 +1,26 @@
+{
+  "fond": {
+    "papier": "#F8F1E3",
+    "papierOmbre": "#EEE2C9",
+    "carte": "#FFFBF3"
+  },
+  "texte": {
+    "encre": "#2A2346",
+    "encreDouce": "#6B6385",
+    "surCachet": "#FFFBF3"
+  },
+  "trait": {
+    "ligne": "#D9CBAE"
+  },
+  "action": {
+    "cachet": "#C8442C"
+  },
+  "decor": {
+    "corail": "#E4573D",
+    "rose": "#F4A7B9",
+    "soleil": "#F6C453",
+    "lavande": "#A99BE8",
+    "nuit": "#34408F",
+    "sauge": "#8CC09A"
+  }
+}
