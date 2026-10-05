@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Billets doux",
+    "slug": "billets-doux",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "billetsdoux",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F8F1E3",
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#F8F1E3",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "Billets doux",
+      "backgroundColor": "#F8F1E3",
+      "themeColor": "#F8F1E3"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F8F1E3",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 76
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

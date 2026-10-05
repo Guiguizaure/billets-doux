@@ -1,0 +1,13 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
+
+# Une seule version de React dans tout le dépôt : celle imposée par le SDK Expo 57.
+overrides:
+  react: 19.2.3
+  react-dom: 19.2.3
+  '@types/react': ~19.2.2
