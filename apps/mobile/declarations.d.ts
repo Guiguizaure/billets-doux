@@ -4,6 +4,3 @@ declare module '*.svg' {
   const content: FC<SvgProps>
   export default content
 }
-
-// Feuille Tailwind de NativeWind, importée pour ses effets de bord.
-declare module '*.css'

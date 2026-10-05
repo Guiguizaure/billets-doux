@@ -166,8 +166,9 @@ function Enveloppe({
         <Animated.View style={[styles.cachet, styleCachet]}>
           <View style={styles.cachetInterieur} />
         </Animated.View>
-        {/* Encre pleine : l'encre douce sur papier ombre n'atteint que 4,4:1. */}
-        <Texte variante="labelS">TOUCHER POUR OUVRIR</Texte>
+        <Texte variante="labelS" couleur={couleurs.texte.encreDouce}>
+          TOUCHER POUR OUVRIR
+        </Texte>
       </Animated.View>
     </Pressable>
   )

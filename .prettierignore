@@ -6,3 +6,4 @@
 **/dist
 pnpm-lock.yaml
 brief-billets-doux.md
+**/expo-env.d.ts
