@@ -58,14 +58,14 @@ export async function creerBrouillon(
   return relire(req, mot.id)
 }
 
-/** Enregistrement automatique : seuls les champs envoyés changent. */
+/** Enregistrement automatique (brouillon ou mot programmé non ouvert) : seuls les champs envoyés changent. */
 export async function modifierBrouillon(
   req: PayloadRequest,
   userId: string,
   id: string,
   modification: ModificationBrouillon,
 ): Promise<VueMotAuteur> {
-  const mot = await brouillonDeLAuteur(req, userId, id)
+  const mot = await motModifiable(req, userId, id)
   const avant = { photo: idDe(mot.photo), vocal: idDe(mot.vocal) }
   const apres = {
     texte: modification.texte !== undefined ? modification.texte : (mot.texte ?? null),
@@ -88,18 +88,19 @@ export async function modifierBrouillon(
 }
 
 export async function supprimerBrouillon(req: PayloadRequest, userId: string, id: string) {
-  await brouillonDeLAuteur(req, userId, id)
+  await motModifiable(req, userId, id)
   // Le hook afterDelete de la collection supprime aussi la photo et le vocal.
   await req.payload.delete({ collection: 'mots', id, req })
 }
 
-async function brouillonDeLAuteur(req: PayloadRequest, userId: string, id: string) {
+/** Un mot de l'auteur encore modifiable : brouillon, ou programmé mais pas encore ouvert. */
+export async function motModifiable(req: PayloadRequest, userId: string, id: string) {
   const mot = await req.payload
     .findByID({ collection: 'mots', id, depth: 0, req })
     .catch(() => null)
   if (!mot || idDe(mot.auteur) !== userId) throw new ErreurMetier(404, INTROUVABLE)
-  if (mot.statut !== 'brouillon') {
-    throw new ErreurMetier(409, 'Ce mot n’est plus un brouillon.')
+  if (mot.statut === 'ouvert') {
+    throw new ErreurMetier(409, 'Ce mot a déjà été ouvert : il ne peut plus changer.')
   }
   return mot
 }
@@ -139,7 +140,7 @@ async function relire(req: PayloadRequest, id: string) {
   return vueMot(await req.payload.findByID({ collection: 'mots', id, depth: 1, req }))
 }
 
-function vueMot(mot: Mot): VueMotAuteur {
+export function vueMot(mot: Mot): VueMotAuteur {
   const media = (valeur: Mot['photo']) =>
     valeur && typeof valeur === 'object' ? vueMedia(valeur as Media) : null
   return {
