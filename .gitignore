@@ -1,0 +1,28 @@
+# Dépendances
+node_modules/
+
+# Environnement
+.env
+.env*.local
+!.env.example
+
+# Builds
+.next/
+dist/
+build/
+web-build/
+.expo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Natif (prebuild)
+apps/mobile/android/
+apps/mobile/ios/
+
+# Divers
+.DS_Store
+*.log
+.turbo/
+coverage/
+.vscode/
+.idea/
