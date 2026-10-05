@@ -8,6 +8,7 @@ import { Texte } from '@/components/Texte'
 import { SectionAnimations } from '@/lab/SectionAnimations'
 import { SectionPalette } from '@/lab/SectionPalette'
 import { SectionStyles } from '@/lab/SectionStyles'
+import { SectionTransitions } from '@/lab/SectionTransitions'
 import { SectionTypo } from '@/lab/SectionTypo'
 import { couleurs } from '@/theme/tokens'
 
@@ -38,6 +39,7 @@ export default function Lab() {
         <SectionTypo />
         <SectionStyles />
         <SectionAnimations />
+        <SectionTransitions />
       </ScrollView>
     </SafeAreaView>
   )

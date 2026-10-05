@@ -70,6 +70,7 @@ export interface Config {
   collections: {
     admins: Admin;
     users: User;
+    duos: Duo;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -79,6 +80,7 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    duos: DuosSelect<false> | DuosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -168,6 +170,19 @@ export interface Admin {
  */
 export interface User {
   id: string;
+  prenom: string;
+  fuseauHoraire: string;
+  heureDecouverte: string;
+  heureConfirmee?: boolean | null;
+  duo?: (string | null) | Duo;
+  reglages?: {
+    rappelDoux?: boolean | null;
+    indicesVisibles?: boolean | null;
+  };
+  essaisCode?: {
+    nombre?: number | null;
+    depuis?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -187,6 +202,29 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "duos".
+ */
+export interface Duo {
+  id: string;
+  membres: (string | User)[];
+  createur: string | User;
+  statut: 'invitation' | 'actif' | 'pause' | 'ferme';
+  code: string;
+  codeExpireLe: string;
+  rejointLe?: string | null;
+  retrouvailles?: string | null;
+  rythmes?:
+    | {
+        membre: string | User;
+        rythme: 'jour' | 'semaine' | 'mois';
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -219,6 +257,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'duos';
+        value: string | Duo;
       } | null);
   globalSlug?: string | null;
   user:
@@ -300,6 +342,23 @@ export interface AdminsSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  prenom?: T;
+  fuseauHoraire?: T;
+  heureDecouverte?: T;
+  heureConfirmee?: T;
+  duo?: T;
+  reglages?:
+    | T
+    | {
+        rappelDoux?: T;
+        indicesVisibles?: T;
+      };
+  essaisCode?:
+    | T
+    | {
+        nombre?: T;
+        depuis?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -317,6 +376,28 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "duos_select".
+ */
+export interface DuosSelect<T extends boolean = true> {
+  membres?: T;
+  createur?: T;
+  statut?: T;
+  code?: T;
+  codeExpireLe?: T;
+  rejointLe?: T;
+  retrouvailles?: T;
+  rythmes?:
+    | T
+    | {
+        membre?: T;
+        rythme?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

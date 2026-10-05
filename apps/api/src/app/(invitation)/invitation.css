@@ -1,0 +1,99 @@
+/* Tokens de la page Fondations du Figma (apps/mobile/src/theme/palette.json). */
+:root {
+  --papier: #f8f1e3;
+  --carte: #fffbf3;
+  --encre: #2a2346;
+  --encre-douce: #645c7e;
+  --ligne: #d9cbae;
+  --cachet: #c8442c;
+  --sur-cachet: #fffbf3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--papier);
+  color: var(--encre);
+  font-family: var(--police-corps), system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  padding: 48px 20px;
+}
+
+main {
+  width: 100%;
+  max-width: 393px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+h1 {
+  font-family: var(--police-titre), Georgia, serif;
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 36px;
+  letter-spacing: -0.16px;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--encre-douce);
+}
+
+.carte {
+  background: var(--carte);
+  border: 1px solid var(--ligne);
+  border-radius: 18px;
+  padding: 20px;
+  text-align: left;
+}
+
+.label {
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.24px;
+  font-weight: 500;
+  color: var(--encre-douce);
+}
+
+.code {
+  font-family: var(--police-titre), Georgia, serif;
+  font-size: 32px;
+  line-height: 36px;
+  margin-top: 6px;
+}
+
+.bouton {
+  display: block;
+  border-radius: 999px;
+  padding: 15px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+.principal {
+  background: var(--cachet);
+  color: var(--sur-cachet);
+}
+
+.secondaire {
+  background: var(--carte);
+  color: var(--encre);
+  border: 1.5px solid var(--encre);
+}
+
+.bouton:focus-visible {
+  outline: 3px solid var(--encre);
+  outline-offset: 3px;
+}

@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
 import { couleurs, rayons } from '@/theme/tokens'
@@ -12,26 +12,46 @@ type Props = {
   variante?: 'principal' | 'secondaire' | 'discret'
   Icone?: FC<SvgProps>
   desactive?: boolean
+  /** Action en cours : le bouton est désactivé et affiche une roue. */
+  enCours?: boolean
+  pleineLargeur?: boolean
+  accessibilityHint?: string
 }
 
 /** Composant Figma « Bouton » (Principal, Secondaire, Discret). */
-export function Bouton({ libelle, onPress, variante = 'principal', Icone, desactive }: Props) {
+export function Bouton({
+  libelle,
+  onPress,
+  variante = 'principal',
+  Icone,
+  desactive,
+  enCours,
+  pleineLargeur,
+  accessibilityHint,
+}: Props) {
   const couleurTexte = variante === 'principal' ? couleurs.texte.surCachet : couleurs.texte.encre
+  const inactif = desactive || enCours
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={libelle}
-      accessibilityState={{ disabled: desactive }}
-      disabled={desactive}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: inactif, busy: enCours }}
+      disabled={inactif}
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
         styles[variante],
-        (pressed || desactive) && styles.presse,
+        pleineLargeur && styles.pleineLargeur,
+        (pressed || inactif) && styles.presse,
       ]}
     >
       <View style={styles.contenu}>
-        {Icone ? <Icone width={20} height={20} color={couleurTexte} /> : null}
+        {enCours ? (
+          <ActivityIndicator size="small" color={couleurTexte} />
+        ) : Icone ? (
+          <Icone width={20} height={20} color={couleurTexte} />
+        ) : null}
         <Texte variante="labelM" couleur={couleurTexte}>
           {libelle}
         </Texte>
@@ -56,12 +76,16 @@ const styles = StyleSheet.create({
     borderColor: couleurs.texte.encre,
   },
   discret: {},
+  pleineLargeur: {
+    alignSelf: 'stretch',
+  },
   presse: {
     opacity: 0.7,
   },
   contenu: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
   },
 })

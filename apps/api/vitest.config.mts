@@ -13,5 +13,7 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     include: ['tests/int/**/*.int.spec.ts'],
     hookTimeout: 30_000,
+    // Les fichiers partagent la même base de test : on les exécute l'un après l'autre.
+    fileParallelism: false,
   },
 })

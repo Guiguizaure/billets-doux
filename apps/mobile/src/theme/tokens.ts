@@ -34,6 +34,8 @@ export type StyleTexte = keyof typeof typo
 /** Rayons relevés sur les composants Figma (bouton, puce, case, pastille). */
 export const rayons = {
   case: 18,
+  /** Cartes des écrans (code d'invitation, choix de l'heure). */
+  carte: 24,
   pilule: 999,
 } as const
 
