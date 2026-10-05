@@ -175,3 +175,8 @@ export function lundiDe(jour: string) {
 export function estOuvrable(unlockAt: string | null | undefined, maintenant = new Date()) {
   return Boolean(unlockAt) && new Date(unlockAt as string).getTime() <= maintenant.getTime()
 }
+
+/** L'heure locale d'un instant dans un fuseau, au format « HH:MM ». */
+export function heureLocale(instant: Date, fuseau: string) {
+  return format(new TZDate(instant, fuseau), 'HH:mm')
+}

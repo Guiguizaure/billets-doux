@@ -1,5 +1,8 @@
-import { StyleSheet, View } from 'react-native'
+import type { FC } from 'react'
+import { Pressable, StyleSheet, View } from 'react-native'
+import type { SvgProps } from 'react-native-svg'
 
+import Plus from '@/assets/icons/Plus.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
 import { couleurs, ombres, rayons } from '@/theme/tokens'
 
@@ -14,10 +17,21 @@ type Props = {
   info: string
   /** Phrase complète lue par le lecteur d'écran, ex. « Lundi 12, verrouillée, dans 3 jours ». */
   libelleAccessible: string
+  /** Icône de la pastille (type du mot) ; une case vide affiche « + ». */
+  Icone?: FC<SvgProps>
+  onPress?: () => void
 }
 
 /** Composant Figma « Case du calendrier ». */
-export function Case({ etat, jourSemaine, jour, info, libelleAccessible }: Props) {
+export function Case({
+  etat,
+  jourSemaine,
+  jour,
+  info,
+  libelleAccessible,
+  Icone = Vocal,
+  onPress,
+}: Props) {
   const aujourdhui = etat === 'aujourdhui'
   const vide = etat === 'vide'
   const couleurDate = aujourdhui
@@ -26,8 +40,9 @@ export function Case({ etat, jourSemaine, jour, info, libelleAccessible }: Props
       ? couleurs.texte.encreDouce
       : couleurs.texte.encre
 
-  return (
-    <View accessible accessibilityLabel={libelleAccessible} style={[styles.case, styles[etat]]}>
+  const IconePastille = vide ? Plus : Icone
+  const contenu = (
+    <>
       <View style={styles.date}>
         <Texte
           variante="labelS"
@@ -41,7 +56,7 @@ export function Case({ etat, jourSemaine, jour, info, libelleAccessible }: Props
       </View>
       <View style={styles.indice}>
         <View style={[styles.pastille, pastilles[etat]]}>
-          <Vocal
+          <IconePastille
             width={16}
             height={16}
             color={vide ? couleurs.texte.encreDouce : couleurs.texte.encre}
@@ -54,6 +69,24 @@ export function Case({ etat, jourSemaine, jour, info, libelleAccessible }: Props
           {info}
         </Texte>
       </View>
+    </>
+  )
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={libelleAccessible}
+        style={({ pressed }) => [styles.case, styles[etat], pressed && styles.presse]}
+      >
+        {contenu}
+      </Pressable>
+    )
+  }
+  return (
+    <View accessible accessibilityLabel={libelleAccessible} style={[styles.case, styles[etat]]}>
+      {contenu}
     </View>
   )
 }
@@ -89,6 +122,9 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.fond.carte,
     borderWidth: 1.5,
     borderColor: couleurs.decor.sauge,
+  },
+  presse: {
+    opacity: 0.75,
   },
   date: {
     gap: 2,
