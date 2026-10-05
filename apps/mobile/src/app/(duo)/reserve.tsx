@@ -71,7 +71,9 @@ export default function Reserve() {
   const rangerVocal = async () => {
     appuye.current = false
     if (enregistreur.etat !== 'enregistrement') return
-    const { uri, duree } = await enregistreur.arreter()
+    const resultat = await enregistreur.arreter()
+    if (!resultat) return
+    const { uri, duree } = resultat
     if (!uri || duree < VOCAL_MINIMUM_S) {
       annoncer('Maintiens un peu plus longtemps pour enregistrer.')
       return

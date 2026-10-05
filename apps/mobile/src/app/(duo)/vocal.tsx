@@ -45,6 +45,10 @@ export default function EcranVocal() {
 
   const valider = async () => {
     if (!uri) return
+    if (duree < 1) {
+      setErreur('Ce vocal est trop court. Recommence en parlant un peu plus longtemps.')
+      return
+    }
     setErreur(null)
     setEnvoi(0)
     try {

@@ -5,8 +5,10 @@ import {
   setAudioModeAsync,
   useAudioRecorder,
 } from 'expo-audio'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Platform } from 'react-native'
+
+import { ControleurEnregistrement } from './controleurEnregistrement'
 
 /** m4a / AAC, mono, 64 kbit/s : ~1,5 Mo pour 3 minutes de voix. */
 const OPTIONS = {
@@ -31,6 +33,10 @@ const niveau = (db: number) => Math.min(1, Math.max(0.06, (db + 55) / 55))
  */
 export function useEnregistreur(maxSecondes: number = LIMITES.vocalSecondes) {
   const recorder = useAudioRecorder(OPTIONS)
+  const controleur = useMemo(
+    () => new ControleurEnregistrement(recorder, maxSecondes * 1000),
+    [recorder, maxSecondes],
+  )
   const [etat, setEtat] = useState<EtatEnregistreur>(
     enregistrementPossible ? 'inactif' : 'indisponible',
   )
@@ -38,15 +44,16 @@ export function useEnregistreur(maxSecondes: number = LIMITES.vocalSecondes) {
   const [niveaux, setNiveaux] = useState<number[]>([])
   const [uri, setUri] = useState<string | null>(null)
 
+  /** Arrête et renvoie le fichier et sa durée ; null si rien n'était en cours. */
   const arreter = useCallback(async () => {
-    const statut = recorder.getStatus()
-    await recorder.stop()
+    const resultat = await controleur.arreter()
+    if (!resultat) return null
     await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true })
-    setDuree(statut.durationMillis / 1000)
-    setUri(recorder.uri)
+    setDuree(resultat.duree)
+    setUri(resultat.uri)
     setEtat('termine')
-    return { uri: recorder.uri, duree: statut.durationMillis / 1000 }
-  }, [recorder])
+    return resultat
+  }, [controleur])
 
   /** Démarre un enregistrement : « demarre », ou la raison de l'échec. */
   const demarrer = useCallback(async (): Promise<'demarre' | 'refuse' | 'indisponible'> => {
@@ -57,36 +64,33 @@ export function useEnregistreur(maxSecondes: number = LIMITES.vocalSecondes) {
       return 'refuse'
     }
     await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true })
-    await recorder.prepareToRecordAsync()
-    recorder.record()
+    await controleur.demarrer()
     setDuree(0)
     setNiveaux([])
     setUri(null)
     setEtat('enregistrement')
     return 'demarre'
-  }, [recorder])
+  }, [controleur])
 
   // Pendant l'enregistrement : durée, onde, et arrêt automatique à la limite.
+  // Une fois l'arrêt lancé, `mesurer()` renvoie null : la durée affichée ne retombe plus à 0.
   useEffect(() => {
     if (etat !== 'enregistrement') return
     const minuteur = setInterval(() => {
-      const statut = recorder.getStatus()
-      setDuree(statut.durationMillis / 1000)
-      if (statut.metering !== undefined) {
-        setNiveaux((n) => [...n, niveau(statut.metering ?? -160)].slice(-400))
+      const mesure = controleur.mesurer()
+      if (!mesure) return
+      setDuree(mesure.duree)
+      if (mesure.niveau !== null) {
+        setNiveaux((n) => [...n, niveau(mesure.niveau ?? -160)].slice(-400))
       }
-      if (statut.durationMillis >= maxSecondes * 1000) void arreter()
+      if (mesure.limiteAtteinte) void arreter()
     }, 100)
     return () => clearInterval(minuteur)
-  }, [etat, recorder, maxSecondes, arreter])
+  }, [etat, controleur, arreter])
 
-  // En quittant l'écran en plein enregistrement, on coupe le micro.
-  useEffect(
-    () => () => {
-      if (recorder.getStatus().isRecording) void recorder.stop()
-    },
-    [recorder],
-  )
+  // En quittant l'écran : coupe le micro si besoin, sans interroger l'enregistreur
+  // (expo-audio l'a peut-être déjà libéré).
+  useEffect(() => () => controleur.liberer(), [controleur])
 
   return {
     etat,
@@ -96,16 +100,16 @@ export function useEnregistreur(maxSecondes: number = LIMITES.vocalSecondes) {
     demarrer,
     arreter,
     pause: () => {
-      recorder.pause()
+      controleur.pause()
       setEtat('pause')
     },
     reprendre: () => {
-      recorder.record()
+      controleur.reprendre()
       setEtat('enregistrement')
     },
     /** Jette l'enregistrement en cours ou terminé, puis repart de zéro. */
     recommencer: async () => {
-      if (recorder.getStatus().isRecording) await recorder.stop()
+      await controleur.arreter()
       return demarrer()
     },
   }
