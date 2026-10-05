@@ -48,6 +48,9 @@ function Navigation() {
         headerShown: false,
         contentStyle: { backgroundColor: couleurs.fond.papier },
       }}
-    />
+    >
+      <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
+      <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
+    </Stack>
   )
 }

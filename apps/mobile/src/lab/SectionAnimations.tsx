@@ -13,31 +13,9 @@ import { Section } from '@/components/Section'
 import { Texte } from '@/components/Texte'
 import { couleurs, rayons } from '@/theme/tokens'
 
-type Variante = 'cachet' | 'retournement' | 'douceur'
-
-const variantes: { id: Variante; titre: string; description: string; duree: number }[] = [
-  {
-    id: 'cachet',
-    titre: 'Le cachet se brise',
-    description: 'Le cachet gonfle, pivote et disparaît, puis le mot apparaît.',
-    duree: 900,
-  },
-  {
-    id: 'retournement',
-    titre: 'L’enveloppe se retourne',
-    description: 'La carte pivote sur elle-même et montre le mot au dos.',
-    duree: 800,
-  },
-  {
-    id: 'douceur',
-    titre: 'Apparition douce',
-    description: 'L’enveloppe s’efface pendant que le mot se pose.',
-    duree: 600,
-  },
-]
-
-/** Quand la réduction des animations est demandée : simple fondu, sans mouvement. */
-const DUREE_REDUITE = 150
+/** Choix validé : le cachet se brise ; apparition douce quand les animations sont réduites. */
+const DUREE_CACHET = 900
+const DUREE_DOUCE = 600
 
 export function SectionAnimations() {
   const systemeReduit = useReducedMotion()
@@ -45,10 +23,10 @@ export function SectionAnimations() {
   const reduit = systemeReduit || simulerReduit
 
   return (
-    <Section titre="Animations : ouverture d’une case">
+    <Section titre="Animation : ouverture d’une case">
       <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-        Touche une enveloppe pour l’ouvrir, touche-la encore pour la refermer. Réduction des
-        animations côté système : {systemeReduit ? 'activée' : 'désactivée'}.
+        Choix retenu : le cachet se brise. Avec « réduire les animations », le mot apparaît
+        doucement. Réduction côté système : {systemeReduit ? 'activée' : 'désactivée'}.
       </Texte>
       <View style={styles.interrupteur}>
         <Switch
@@ -60,38 +38,20 @@ export function SectionAnimations() {
         />
         <Texte variante="corpsM">Simuler « réduire les animations »</Texte>
       </View>
-      <View style={styles.grille}>
-        {variantes.map((v) => (
-          <View key={v.id} style={styles.variante}>
-            <Texte variante="labelM">{v.titre}</Texte>
-            <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-              {v.description}
-            </Texte>
-            <Enveloppe variante={v.id} duree={v.duree} reduit={reduit} />
-          </View>
-        ))}
-      </View>
+      <Texte variante="labelM">{reduit ? 'Apparition douce' : 'Le cachet se brise'}</Texte>
+      <Enveloppe reduit={reduit} />
     </Section>
   )
 }
 
-function Enveloppe({
-  variante,
-  duree,
-  reduit,
-}: {
-  variante: Variante
-  duree: number
-  reduit: boolean
-}) {
+function Enveloppe({ reduit }: { reduit: boolean }) {
   const [ouverte, setOuverte] = useState(false)
   const p = useSharedValue(0)
 
   const basculer = () => {
-    const cible = ouverte ? 0 : 1
     p.set(
-      withTiming(cible, {
-        duration: reduit ? DUREE_REDUITE : duree,
+      withTiming(ouverte ? 0 : 1, {
+        duration: reduit ? DUREE_DOUCE : DUREE_CACHET,
         easing: Easing.out(Easing.cubic),
       }),
     )
@@ -100,25 +60,18 @@ function Enveloppe({
 
   const styleFace = useAnimatedStyle(() => {
     const v = p.get()
-    if (reduit) return { opacity: 1 - v }
-    switch (variante) {
-      case 'cachet':
-        return { opacity: interpolate(v, [0.4, 0.7], [1, 0], 'clamp') }
-      case 'retournement':
-        return {
-          transform: [{ perspective: 800 }, { rotateY: `${interpolate(v, [0, 1], [0, 180])}deg` }],
-        }
-      case 'douceur':
-        return {
-          opacity: interpolate(v, [0, 0.6], [1, 0], 'clamp'),
-          transform: [{ scale: interpolate(v, [0, 1], [1, 0.96]) }],
-        }
+    if (reduit) {
+      return {
+        opacity: interpolate(v, [0, 0.6], [1, 0], 'clamp'),
+        transform: [{ scale: interpolate(v, [0, 1], [1, 0.96]) }],
+      }
     }
+    return { opacity: interpolate(v, [0.4, 0.7], [1, 0], 'clamp') }
   })
 
   const styleCachet = useAnimatedStyle(() => {
     const v = p.get()
-    if (reduit || variante !== 'cachet') return {}
+    if (reduit) return {}
     return {
       transform: [
         { scale: interpolate(v, [0, 0.3, 0.6], [1, 1.25, 0], 'clamp') },
@@ -129,25 +82,15 @@ function Enveloppe({
 
   const styleMot = useAnimatedStyle(() => {
     const v = p.get()
-    if (reduit) return { opacity: v }
-    switch (variante) {
-      case 'cachet':
-        return {
-          opacity: interpolate(v, [0.55, 1], [0, 1], 'clamp'),
-          transform: [{ translateY: interpolate(v, [0.55, 1], [8, 0], 'clamp') }],
-        }
-      case 'retournement':
-        return {
-          transform: [
-            { perspective: 800 },
-            { rotateY: `${interpolate(v, [0, 1], [180, 360])}deg` },
-          ],
-        }
-      case 'douceur':
-        return {
-          opacity: interpolate(v, [0.3, 1], [0, 1], 'clamp'),
-          transform: [{ scale: interpolate(v, [0, 1], [1.04, 1]) }],
-        }
+    if (reduit) {
+      return {
+        opacity: interpolate(v, [0.3, 1], [0, 1], 'clamp'),
+        transform: [{ scale: interpolate(v, [0, 1], [1.04, 1]) }],
+      }
+    }
+    return {
+      opacity: interpolate(v, [0.55, 1], [0, 1], 'clamp'),
+      transform: [{ translateY: interpolate(v, [0.55, 1], [8, 0], 'clamp') }],
     }
   })
 
@@ -180,19 +123,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  grille: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 16,
-  },
-  variante: {
-    flexGrow: 1,
-    flexBasis: 220,
-    gap: 8,
-  },
   scene: {
     height: 180,
-    marginTop: 8,
+    maxWidth: 360,
   },
   face: {
     ...StyleSheet.absoluteFill,
@@ -203,7 +136,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     gap: 12,
-    backfaceVisibility: 'hidden',
   },
   scellee: {
     backgroundColor: couleurs.fond.papierOmbre,
