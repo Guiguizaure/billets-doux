@@ -15,7 +15,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.webjuno.billetsdoux"
     },
     "web": {
       "output": "single",
@@ -33,7 +34,38 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./node_modules/@expo-google-fonts/instrument-serif/400Regular/InstrumentSerif_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/instrument-serif/400Regular_Italic/InstrumentSerif_400Regular_Italic.ttf",
+            "./node_modules/@expo-google-fonts/dm-sans/400Regular/DMSans_400Regular.ttf",
+            "./node_modules/@expo-google-fonts/dm-sans/500Medium/DMSans_500Medium.ttf",
+            "./node_modules/@expo-google-fonts/dm-sans/600SemiBold/DMSans_600SemiBold.ttf",
+            "./node_modules/@expo-google-fonts/caveat/400Regular/Caveat_400Regular.ttf"
+          ]
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Billets doux utilise le micro pour enregistrer tes mots vocaux.",
+          "recordAudioAndroid": true,
+          "enableBackgroundRecording": false,
+          "enableBackgroundPlayback": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Billets doux accède à tes photos pour les joindre à tes mots.",
+          "cameraPermission": "Billets doux utilise l’appareil photo pour joindre une photo à tes mots."
+        }
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,
