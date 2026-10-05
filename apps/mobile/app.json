@@ -2,6 +2,7 @@
   "expo": {
     "name": "Billets doux",
     "slug": "billets-doux",
+    "owner": "webjuno",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +17,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.webjuno.billetsdoux"
+      "package": "com.webjuno.billetsdoux",
+      "permissions": ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"]
     },
     "web": {
       "output": "single",
@@ -70,6 +72,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dda503c4-9ab7-43f4-b18d-e01fef36925c"
+      }
     }
   }
 }
