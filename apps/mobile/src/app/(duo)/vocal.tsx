@@ -1,10 +1,11 @@
-import { formaterDuree } from '@billets-doux/shared'
+import { formaterDuree, LIMITES } from '@billets-doux/shared'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Linking, StyleSheet, View } from 'react-native'
 
 import Boite from '@/assets/icons/Boite.svg'
 import Calendrier from '@/assets/icons/Calendrier.svg'
+import Envoyer from '@/assets/icons/Envoyer.svg'
 import Frequence from '@/assets/icons/Frequence.svg'
 import Lecture from '@/assets/icons/Lecture.svg'
 import Mot from '@/assets/icons/Mot.svg'
@@ -23,18 +24,25 @@ import { api } from '@/lib/client'
 import { useEnregistreur } from '@/lib/enregistreur'
 import { messageErreur } from '@/lib/formulaires'
 import { televerser } from '@/lib/televersement'
+import { useSession } from '@/session/SessionProvider'
 import { couleurs, rayons } from '@/theme/tokens'
 
 const revenir = () => (router.canGoBack() ? router.back() : router.replace('/reserve'))
 
 /**
  * Écran 3.3 Enregistrer un vocal. `?mode=joindre` : le vocal est joint au mot en cours
- * d'écriture ; sinon il est rangé seul dans la réserve. « Programmer » arrive à l'étape 4.
+ * d'écriture ; `?mode=reponse&mot=` : réponse de 30 s à un mot reçu (2.7) ; sinon il est
+ * rangé seul dans la réserve.
  */
 export default function EcranVocal() {
-  const { mode } = useLocalSearchParams<{ mode?: string }>()
+  const { mode, mot: motRepondu } = useLocalSearchParams<{ mode?: string; mot?: string }>()
   const joindre = mode === 'joindre'
-  const enregistreur = useEnregistreur()
+  const reponse = mode === 'reponse' && Boolean(motRepondu)
+  const { moi } = useSession()
+  const partenaire = moi?.duo?.partenaire?.prenom ?? 'ta personne'
+  const maxSecondes = reponse ? LIMITES.reponseVocalSecondes : LIMITES.vocalSecondes
+  const titre = reponse ? 'Répondre en vocal' : 'Nouveau vocal'
+  const enregistreur = useEnregistreur(maxSecondes)
   const { etat, duree, niveaux, uri, demarrer } = enregistreur
   const [envoi, setEnvoi] = useState<number | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -55,6 +63,11 @@ export default function EcranVocal() {
     setEnvoi(0)
     try {
       const vocal = await televerser({ nature: 'vocal', uri, duree }, setEnvoi)
+      if (reponse && motRepondu) {
+        await api.repondre(motRepondu, { vocal: vocal.id })
+        revenir()
+        return
+      }
       if (joindre) {
         boiteAuxLettres.deposerVocal(vocal)
         revenir()
@@ -71,7 +84,7 @@ export default function EcranVocal() {
 
   if (etat === 'indisponible') {
     return (
-      <Ecran enTete={<EnTete titre="Nouveau vocal" retour={revenir} />}>
+      <Ecran enTete={<EnTete titre={titre} retour={revenir} />}>
         <View style={styles.contenu}>
           <FleurQuiChante width={128} height={160} />
           <Texte variante="titreM" style={styles.centre}>
@@ -88,7 +101,7 @@ export default function EcranVocal() {
   if (etat === 'refuse') {
     return (
       <Ecran
-        enTete={<EnTete titre="Nouveau vocal" retour={revenir} />}
+        enTete={<EnTete titre={titre} retour={revenir} />}
         actions={
           <>
             <Bouton
@@ -130,10 +143,17 @@ export default function EcranVocal() {
 
   return (
     <Ecran
-      enTete={<EnTete titre="Nouveau vocal" retour={revenir} />}
+      enTete={<EnTete titre={titre} retour={revenir} />}
       actions={
         !termine ? null : envoi !== null ? (
           <Bouton libelle={`Envoi… ${Math.round(envoi * 100)} %`} pleineLargeur enCours />
+        ) : reponse ? (
+          <Bouton
+            libelle={`Envoyer à ${partenaire}`}
+            Icone={Envoyer}
+            pleineLargeur
+            onPress={() => void valider()}
+          />
         ) : joindre ? (
           <Bouton
             libelle="Joindre au mot"
@@ -225,7 +245,7 @@ export default function EcranVocal() {
           )}
         </View>
         <Texte variante="corpsS" couleur={couleurs.texte.encreDouce} style={styles.centre}>
-          3 minutes au plus.
+          {reponse ? '30 secondes au plus.' : '3 minutes au plus.'}
         </Texte>
       </View>
     </Ecran>

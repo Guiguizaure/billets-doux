@@ -1,0 +1,12 @@
+<svg width="200" height="150" viewBox="0 0 200 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="enveloppe-cachet">
+<path id="Vector" d="M182 20H18C13.5817 20 10 23.5817 10 28V132C10 136.418 13.5817 140 18 140H182C186.418 140 190 136.418 190 132V28C190 23.5817 186.418 20 182 20Z" fill="#FFFBF3" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M179 27H21C18.7909 27 17 28.7909 17 31V129C17 131.209 18.7909 133 21 133H179C181.209 133 183 131.209 183 129V31C183 28.7909 181.209 27 179 27Z" stroke="#C8442C" stroke-width="5" stroke-dasharray="10 10"/>
+<path id="Vector_3" d="M179 27H21C18.7909 27 17 28.7909 17 31V129C17 131.209 18.7909 133 21 133H179C181.209 133 183 131.209 183 129V31C183 28.7909 181.209 27 179 27Z" stroke="#34408F" stroke-width="5" stroke-dasharray="10 10"/>
+<path id="Vector_4" d="M12 24L100 88L188 24H12Z" fill="#EEE2C9" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M100 109C111.598 109 121 99.598 121 88C121 76.402 111.598 67 100 67C88.402 67 79 76.402 79 88C79 99.598 88.402 109 100 109Z" fill="#E4573D" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_6" d="M100 97C91 91 87 86 91 82C94 79 98 81 100 84C102 81 106 79 109 82C113 86 109 91 100 97Z" fill="#FFFBF3"/>
+<path id="Vector_7" d="M176 2L178.08 7.92L184 10L178.08 12.08L176 18L173.92 12.08L168 10L173.92 7.92L176 2Z" fill="#F6C453" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_8" d="M22 132L23.56 136.44L28 138L23.56 139.56L22 144L20.44 139.56L16 138L20.44 136.44L22 132Z" fill="#F4A7B9" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>
