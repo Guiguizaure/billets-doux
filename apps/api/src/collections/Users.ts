@@ -1,21 +1,97 @@
+import { HEURE_PAR_DEFAUT, HeureDecouverte } from '@billets-doux/shared'
 import type { CollectionConfig } from 'payload'
+
+import { fuseauValide } from '@/lib/fuseau'
 
 import { isAdmin } from './Admins'
 
+const TRENTE_JOURS = 60 * 60 * 24 * 30
+
 /**
- * Comptes de l'appli. Champs et règles d'accès complets à l'étape 2 (inscription, duo) ;
- * d'ici là, seuls les admins y ont accès.
+ * Comptes de l'appli. L'appli passe uniquement par les routes `/api/comptes/*` et
+ * `/api/duos/*` (src/endpoints) : l'API REST générique reste réservée aux admins.
  */
 export const Users: CollectionConfig = {
   slug: 'users',
   labels: { singular: 'Utilisateur', plural: 'Utilisateurs' },
-  admin: { useAsTitle: 'email' },
-  auth: true,
+  admin: {
+    useAsTitle: 'email',
+    defaultColumns: ['prenom', 'email', 'duo', 'createdAt'],
+  },
+  auth: {
+    tokenExpiration: TRENTE_JOURS,
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
+  },
   access: {
     read: isAdmin,
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
   },
-  fields: [],
+  fields: [
+    {
+      name: 'prenom',
+      label: 'Prénom',
+      type: 'text',
+      required: true,
+      maxLength: 40,
+    },
+    {
+      name: 'fuseauHoraire',
+      label: 'Fuseau horaire',
+      type: 'text',
+      required: true,
+      defaultValue: 'Europe/Paris',
+      validate: (valeur: string | null | undefined) =>
+        valeur && fuseauValide(valeur) ? true : 'Fuseau horaire inconnu.',
+    },
+    {
+      name: 'heureDecouverte',
+      label: 'Heure de découverte',
+      type: 'text',
+      required: true,
+      defaultValue: HEURE_PAR_DEFAUT,
+      validate: (valeur: string | null | undefined) =>
+        HeureDecouverte.safeParse(valeur).success || 'Heure invalide (HH:MM).',
+    },
+    {
+      name: 'heureConfirmee',
+      label: 'Heure confirmée (écran 1.3 vu)',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      name: 'duo',
+      label: 'Duo en cours',
+      type: 'relationship',
+      relationTo: 'duos',
+      index: true,
+      admin: { readOnly: true },
+    },
+    {
+      name: 'reglages',
+      label: 'Réglages',
+      type: 'group',
+      fields: [
+        { name: 'rappelDoux', label: 'Rappel doux', type: 'checkbox', defaultValue: true },
+        {
+          name: 'indicesVisibles',
+          label: 'Indices visibles',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+      ],
+    },
+    {
+      name: 'essaisCode',
+      label: 'Essais de code d’invitation',
+      type: 'group',
+      admin: { readOnly: true },
+      fields: [
+        { name: 'nombre', type: 'number', defaultValue: 0 },
+        { name: 'depuis', type: 'date' },
+      ],
+    },
+  ],
 }

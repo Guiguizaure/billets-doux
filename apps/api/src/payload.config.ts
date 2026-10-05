@@ -6,7 +6,9 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Admins } from './collections/Admins'
+import { Duos } from './collections/Duos'
 import { Users } from './collections/Users'
+import { comptesEndpoints } from './endpoints/comptes'
 import { health } from './endpoints/health'
 
 const filename = fileURLToPath(import.meta.url)
@@ -30,8 +32,8 @@ export default buildConfig({
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',
   },
-  collections: [Admins, Users],
-  endpoints: [health],
+  collections: [Admins, Users, Duos],
+  endpoints: [health, ...comptesEndpoints],
   cors: corsOrigins,
   csrf: corsOrigins,
   secret: process.env.PAYLOAD_SECRET || '',
