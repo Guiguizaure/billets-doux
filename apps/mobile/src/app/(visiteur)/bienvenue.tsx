@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native'
 
 import Cadenas from '@/assets/icons/Cadenas.svg'
 import Coeur from '@/assets/icons/Coeur.svg'
-import Enveloppe from '@/assets/icons/Enveloppe.svg'
+import Mot from '@/assets/icons/Mot.svg'
 import Plume from '@/assets/icons/Plume.svg'
 import OiseauMessager from '@/assets/illustrations/oiseau-messager.svg'
 import { Bouton } from '@/components/Bouton'
@@ -29,7 +29,7 @@ export default function Bienvenue() {
           <Bouton
             libelle="J’ai reçu une invitation"
             variante="secondaire"
-            Icone={Enveloppe}
+            Icone={Mot}
             pleineLargeur
             onPress={() => router.push('/rejoindre')}
           />
