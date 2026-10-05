@@ -1,2 +1,7 @@
 export * from './enums'
 export * from './api/health'
+export * from './api/erreurs'
+export * from './api/client'
+export * from './schemas/heure'
+export * from './schemas/comptes'
+export * from './schemas/duo'
