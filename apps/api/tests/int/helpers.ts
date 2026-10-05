@@ -14,6 +14,7 @@ export async function demarrer() {
 
 /** Vide les collections de l'appli (base de test uniquement, cf. vitest.setup.ts). */
 export async function viderBase(payload: Payload) {
+  await payload.db.deleteMany({ collection: 'reponses', where: {} })
   await payload.db.deleteMany({ collection: 'mots', where: {} })
   await payload.db.deleteMany({ collection: 'medias', where: {} })
   await payload.db.deleteMany({ collection: 'duos', where: {} })

@@ -86,6 +86,13 @@ export const Users: CollectionConfig = {
       admin: { readOnly: true },
     },
     {
+      // Écrit à chaque joker : deux jokers simultanés se gênent dans la transaction (un seul passe).
+      name: 'dernierJokerLe',
+      label: 'Dernier joker utilisé le',
+      type: 'date',
+      admin: { readOnly: true },
+    },
+    {
       name: 'reglages',
       label: 'Réglages',
       type: 'group',

@@ -27,9 +27,14 @@ export const Mots: CollectionConfig = {
   },
   endpoints: listesMots,
   hooks: {
-    // Un mot supprimé emporte sa photo et son vocal (fiches et fichiers).
+    // Un mot supprimé emporte sa photo, son vocal et la réponse reçue (fiches et fichiers).
     afterDelete: [
       async ({ doc, req }) => {
+        await req.payload
+          .delete({ collection: 'reponses', where: { mot: { equals: doc.id } }, req })
+          .catch((e: unknown) => {
+            req.payload.logger.error({ err: e, mot: doc.id }, 'Réponse du mot non supprimée')
+          })
         for (const media of [doc.photo, doc.vocal]) {
           const id = idDe(media)
           if (!id) continue

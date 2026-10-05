@@ -92,6 +92,18 @@ export async function lecture(
 
 async function peutLire(req: PayloadRequest, userId: string, media: Media) {
   if (idDe(media.proprietaire) === userId) return true
+  // Vocal de réponse : l'auteur du mot auquel on répond peut l'écouter.
+  const { docs: reponses } = await req.payload.find({
+    collection: 'reponses',
+    where: { vocal: { equals: media.id } },
+    limit: 1,
+    depth: 1,
+    req,
+  })
+  const reponse = reponses[0]
+  if (reponse && typeof reponse.mot === 'object' && idDe(reponse.mot.auteur) === userId) {
+    return true
+  }
   const { totalDocs } = await req.payload.count({
     collection: 'mots',
     where: {

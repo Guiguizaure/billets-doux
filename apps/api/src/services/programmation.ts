@@ -20,6 +20,7 @@ import { idDe } from '@/lib/ids'
 
 import { duoCourant } from './duoCourant'
 import { motModifiable, vueMot } from './mots'
+import { reponsesDe, vueReponse } from './reception'
 
 const SANS_PROGRAMMATION = {
   jourOuverture: null,
@@ -141,6 +142,10 @@ export async function calendrier(
       req,
     }),
   ])
+  const reponses = await reponsesDe(
+    req,
+    docs.filter((m) => m.statut === 'ouvert').map((m) => m.id),
+  )
   const rythme = duo.rythmes?.find((r) => idDe(r.membre) === userId)?.rythme ?? ('jour' as Rythme)
   return {
     rythme,
@@ -156,7 +161,10 @@ export async function calendrier(
       destinataire.fuseauHoraire,
     ),
     dernierJour: dernierJourProgrammable(maintenant, destinataire.fuseauHoraire),
-    mots: docs.map(vueProgramme),
+    mots: docs.map((mot) => {
+      const reponse = reponses.get(mot.id)
+      return { ...vueProgramme(mot), reponse: reponse ? vueReponse(reponse) : null }
+    }),
     brouillons: brouillons.totalDocs,
   }
 }
@@ -218,6 +226,8 @@ export function vueProgramme(mot: Mot): MotProgramme {
     ...vueMot(mot),
     programmation: vueProgrammation(mot),
     ouvertLe: mot.openedAt ?? null,
+    ouvertAvecJoker: Boolean(mot.ouvertAvecJoker),
+    reponse: null,
   }
 }
 
