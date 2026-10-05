@@ -1,0 +1,34 @@
+{
+  "name": "@billets-doux/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Types, schémas zod, client d'API et règles de dates partagés (aucun composant d'interface).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./payload-types": "./src/payload-types.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "react": "19.2.3"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "eslint": "^9.39.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}
