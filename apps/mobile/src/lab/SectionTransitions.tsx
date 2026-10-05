@@ -6,12 +6,12 @@ import { Section } from '@/components/Section'
 import { Texte } from '@/components/Texte'
 import { couleurs } from '@/theme/tokens'
 
-/** Transitions entre écrans : glissement (Android par défaut) ou fondu. */
+/** Transitions entre écrans : le fondu est retenu (theme/navigation.ts), le glissement reste pour comparaison. */
 export function SectionTransitions() {
   return (
     <Section titre="Transitions entre écrans">
       <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-        Ouvre le même écran avec chaque transition, puis reviens en arrière.
+        Choix retenu : le fondu, appliqué à toute l’appli. Le glissement reste ici pour comparaison.
         {Platform.OS === 'web'
           ? ' Sur le web, la navigation n’est pas animée : compare sur le téléphone.'
           : ''}

@@ -9,7 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { SessionProvider, useSession } from '@/session/SessionProvider'
 import { fichiersPolices } from '@/theme/polices'
-import { couleurs } from '@/theme/tokens'
+import { optionsPile } from '@/theme/navigation'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -43,12 +43,7 @@ function Navigation() {
   }, [phase])
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: couleurs.fond.papier },
-      }}
-    >
+    <Stack screenOptions={optionsPile}>
       <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
       <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
     </Stack>
