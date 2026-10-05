@@ -1,8 +1,10 @@
 import { getHealth } from '@billets-doux/shared'
+import { router } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+import Plume from '@/assets/icons/Plume.svg'
 import { Bouton } from '@/components/Bouton'
 import { Texte } from '@/components/Texte'
 import { apiUrl } from '@/lib/api'
@@ -70,6 +72,15 @@ export default function Accueil() {
         </View>
         {etat.statut !== 'chargement' && (
           <Bouton libelle="Réessayer" variante="discret" onPress={reessayer} />
+        )}
+
+        {__DEV__ && (
+          <Bouton
+            libelle="Page de test des styles"
+            variante="secondaire"
+            Icone={Plume}
+            onPress={() => router.push('/lab')}
+          />
         )}
       </ScrollView>
     </SafeAreaView>
