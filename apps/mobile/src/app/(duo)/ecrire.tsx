@@ -1,10 +1,10 @@
-import { LIMITES, TypeMot } from '@billets-doux/shared'
+import { libellesJour, LIMITES, type MotProgramme, TypeMot } from '@billets-doux/shared'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
 
 import Apercu from '@/assets/icons/Apercu.svg'
-import Boite from '@/assets/icons/Boite.svg'
+import Calendrier from '@/assets/icons/Calendrier.svg'
 import Photo from '@/assets/icons/Photo.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
 import BordureParAvion from '@/assets/illustrations/bordure-par-avion.svg'
@@ -39,31 +39,51 @@ import { useSession } from '@/session/SessionProvider'
 import { familles } from '@/theme/polices'
 import { couleurs, rayons, typo } from '@/theme/tokens'
 
-type Initial = { id: string | null; champs: ChampsBrouillon }
+type Initial = {
+  id: string | null
+  champs: ChampsBrouillon
+  /** Déjà programmé (modifiable jusqu'à son ouverture). */
+  programmation: MotProgramme['programmation'] | null
+}
 
-/** Écran 3.4 Écrire un mot (nouveau, ou brouillon de la réserve avec `?id=`). */
+/**
+ * Écran 3.4 Écrire un mot : nouveau, ou existant avec `?id=` (brouillon ou mot programmé).
+ * `?jour=` (case libre du calendrier) et `?mode=ouvre_quand` sont transmis à l'écran 3.5.
+ */
 export default function Ecrire() {
-  const params = useLocalSearchParams<{ id?: string; type?: string }>()
+  const params = useLocalSearchParams<{
+    id?: string
+    type?: string
+    jour?: string
+    mode?: string
+  }>()
   const typeDemande = TypeMot.safeParse(params.type).data
   const [initial, setInitial] = useState<Initial | null>(
-    params.id ? null : { id: null, champs: champsVides(typeDemande) },
+    params.id ? null : { id: null, champs: champsVides(typeDemande), programmation: null },
   )
 
   useEffect(() => {
     if (!params.id) return
     let annule = false
-    api
-      .reserve()
-      .then(({ mots }) => {
-        const mot = mots.find((m) => m.id === params.id)
+    Promise.all([api.reserve(), api.calendrier()])
+      .then(([reserve, calendrier]) => {
+        const brouillon = reserve.mots.find((m) => m.id === params.id)
+        const programme = calendrier.mots.find((m) => m.id === params.id && !m.ouvertLe)
+        const mot = brouillon ?? programme
         if (!annule) {
           setInitial(
-            mot ? { id: mot.id, champs: champsDepuis(mot) } : { id: null, champs: champsVides() },
+            mot
+              ? {
+                  id: mot.id,
+                  champs: champsDepuis(mot),
+                  programmation: programme?.programmation ?? null,
+                }
+              : { id: null, champs: champsVides(), programmation: null },
           )
         }
       })
       .catch(() => {
-        if (!annule) setInitial({ id: null, champs: champsVides() })
+        if (!annule) setInitial({ id: null, champs: champsVides(), programmation: null })
       })
     return () => {
       annule = true
@@ -77,7 +97,13 @@ export default function Ecrire() {
       </Ecran>
     )
   }
-  return <Editeur initial={initial} />
+  return (
+    <Editeur
+      initial={initial}
+      jourDemande={params.jour ?? null}
+      modeDemande={params.mode ?? null}
+    />
+  )
 }
 
 function revenir() {
@@ -85,7 +111,15 @@ function revenir() {
   else router.replace('/reserve')
 }
 
-function Editeur({ initial }: { initial: Initial }) {
+function Editeur({
+  initial,
+  jourDemande,
+  modeDemande,
+}: {
+  initial: Initial
+  jourDemande: string | null
+  modeDemande: string | null
+}) {
   const { moi } = useSession()
   const destinataire = moi?.duo?.partenaire?.prenom ?? 'ta personne'
   const brouillon = useBrouillon(initial)
@@ -145,9 +179,27 @@ function Editeur({ initial }: { initial: Initial }) {
     revenir()
   }
 
+  /** Enregistre, puis passe à l'écran 3.5 « Quand l'ouvrir ? ». */
+  const choisirQuand = async () => {
+    if (brouillon.estVide) {
+      setMessage('Écris quelques mots, ou joins une photo ou un vocal, avant de choisir le jour.')
+      return
+    }
+    const id = await brouillon.forcer()
+    if (!id) return
+    router.push({
+      pathname: '/programmer',
+      params: {
+        id,
+        ...(jourDemande ? { jour: jourDemande } : {}),
+        ...(modeDemande ? { mode: modeDemande } : {}),
+      },
+    })
+  }
+
   const supprimer = async () => {
     const ok = await confirmer(
-      'Supprimer ce brouillon ?',
+      initial.programmation ? 'Supprimer ce mot ?' : 'Supprimer ce brouillon ?',
       'Le texte, la photo et le vocal seront effacés. Impossible de revenir en arrière.',
       'Supprimer',
     )
@@ -175,14 +227,25 @@ function Editeur({ initial }: { initial: Initial }) {
         />
       }
       actions={
-        <Bouton
-          libelle="Ranger dans la réserve"
-          Icone={Boite}
-          pleineLargeur
-          onPress={() => void ranger()}
-        />
+        <>
+          <Bouton
+            libelle={initial.programmation ? 'Changer quand l’ouvrir' : 'Choisir quand l’ouvrir'}
+            Icone={Calendrier}
+            pleineLargeur
+            onPress={() => void choisirQuand()}
+          />
+          <LienTexte
+            libelle={initial.programmation ? 'Terminé' : 'Garder dans la réserve'}
+            onPress={() => void ranger()}
+          />
+        </>
       }
     >
+      {initial.programmation ? (
+        <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
+          {descriptionProgrammation(initial.programmation)}
+        </Texte>
+      ) : null}
       {apercu ? (
         <LettreApercu
           destinataire={destinataire}
@@ -297,12 +360,26 @@ function Editeur({ initial }: { initial: Initial }) {
           ) : null}
           {message ? <Alerte message={message} /> : null}
           {brouillon.id ? (
-            <LienTexte libelle="Supprimer ce brouillon" onPress={() => void supprimer()} />
+            <LienTexte
+              libelle={initial.programmation ? 'Supprimer ce mot' : 'Supprimer ce brouillon'}
+              onPress={() => void supprimer()}
+            />
           ) : null}
         </>
       )}
     </Ecran>
   )
+}
+
+function descriptionProgrammation(p: MotProgramme['programmation']) {
+  switch (p.mode) {
+    case 'date':
+      return `Programmé pour le ${libellesJour(p.jour).long}.`
+    case 'semaine_hasard':
+      return `Programmé quelque part entre le ${libellesJour(p.debut).date} et le ${libellesJour(p.fin).date}.`
+    case 'ouvre_quand':
+      return `Lettre « Ouvre quand ${p.titre} ».`
+  }
 }
 
 function EtatEnregistrement({ etat, erreur }: { etat: EtatSauvegarde; erreur: string | null }) {
@@ -311,7 +388,7 @@ function EtatEnregistrement({ etat, erreur }: { etat: EtatSauvegarde; erreur: st
     vide: 'Un mot vide n’est pas enregistré.',
     modifie: 'Modifications en attente…',
     enCours: 'Enregistrement…',
-    enregistre: 'Enregistré dans ta réserve.',
+    enregistre: 'Enregistré.',
     erreur: '',
   }
   return (

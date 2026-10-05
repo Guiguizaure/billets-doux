@@ -247,6 +247,12 @@ export interface Mot {
   photo?: (string | null) | Media;
   vocal?: (string | null) | Media;
   mode: 'date' | 'semaine_hasard' | 'ouvre_quand' | 'brouillon';
+  /**
+   * Pour « Dans la semaine » : le jour tiré, jamais montré à l’auteur.
+   */
+  jourOuverture?: string | null;
+  semaineDebut?: string | null;
+  semaineFin?: string | null;
   unlockAt?: string | null;
   titreOuvreQuand?: string | null;
   statut: 'brouillon' | 'programme' | 'ouvert';
@@ -470,6 +476,9 @@ export interface MotsSelect<T extends boolean = true> {
   photo?: T;
   vocal?: T;
   mode?: T;
+  jourOuverture?: T;
+  semaineDebut?: T;
+  semaineFin?: T;
   unlockAt?: T;
   titreOuvreQuand?: T;
   statut?: T;

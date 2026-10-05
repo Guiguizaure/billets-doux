@@ -2,6 +2,7 @@ import { HEURE_PAR_DEFAUT, HeureDecouverte } from '@billets-doux/shared'
 import type { CollectionConfig } from 'payload'
 
 import { fuseauValide } from '@/lib/fuseau'
+import { recalculerOuvertures } from '@/services/programmation'
 
 import { isAdmin } from './Admins'
 
@@ -28,6 +29,21 @@ export const Users: CollectionConfig = {
     create: isAdmin,
     update: isAdmin,
     delete: isAdmin,
+  },
+  hooks: {
+    // Nouvelle heure de découverte ou nouveau fuseau : les mots qui lui sont destinés suivent.
+    afterChange: [
+      async ({ doc, previousDoc, operation, req }) => {
+        if (operation !== 'update' || !previousDoc) return doc
+        if (
+          doc.heureDecouverte !== previousDoc.heureDecouverte ||
+          doc.fuseauHoraire !== previousDoc.fuseauHoraire
+        ) {
+          await recalculerOuvertures(req, doc)
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     {

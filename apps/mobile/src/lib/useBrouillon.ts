@@ -141,8 +141,11 @@ export function useBrouillon(initial: { id: string | null; champs: ChampsBrouill
     touche,
     estVide: vide(champs),
     modifier,
-    /** Enregistre maintenant (avant d'ouvrir l'enregistreur, avant de partir). */
-    forcer: () => sauver(dernier.current, version.current),
+    /** Enregistre maintenant (avant d'ouvrir l'enregistreur, avant de partir) ; renvoie l'id. */
+    forcer: async () => {
+      await sauver(dernier.current, version.current)
+      return idCourant.current
+    },
     /** Supprime le brouillon (et ses médias) ; rien à faire s'il n'a jamais été enregistré. */
     supprimer: async () => {
       version.current = Number.MAX_SAFE_INTEGER
