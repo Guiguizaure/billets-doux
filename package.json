@@ -1,0 +1,22 @@
+{
+  "name": "billets-doux",
+  "private": true,
+  "packageManager": "pnpm@11.3.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d --wait mongo",
+    "db:down": "docker compose stop mongo",
+    "dev:api": "pnpm --filter @billets-doux/api dev",
+    "dev:mobile": "pnpm --filter @billets-doux/mobile start",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
