@@ -424,4 +424,19 @@ export async function supprimerCompte(req: PayloadRequest, userId: string, motDe
   await payload.delete({ collection: 'envois-push', where: { utilisateur: { equals: userId } } })
   await supprimerPrefixe(`exports/${userId}/`)
   await payload.delete({ collection: 'users', id: userId })
+
+  // Un duo fermé dont plus aucun membre n'existe ne sert plus à personne.
+  const { docs: anciens } = await payload.find({
+    collection: 'duos',
+    where: { membres: { contains: userId } },
+    depth: 0,
+    limit: 100,
+  })
+  for (const ancien of anciens) {
+    const autres = ancien.membres
+      .map(idDe)
+      .filter((id): id is string => Boolean(id) && id !== userId)
+    const restants = await payload.count({ collection: 'users', where: { id: { in: autres } } })
+    if (restants.totalDocs === 0) await payload.delete({ collection: 'duos', id: ancien.id })
+  }
 }

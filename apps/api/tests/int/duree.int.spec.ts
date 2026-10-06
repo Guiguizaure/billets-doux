@@ -348,5 +348,10 @@ describe('suppression du compte', () => {
     expect(
       (await lireMot(await requete(payload), h.leo.id, h.ouvertPourLina)).destinataire.prenom,
     ).toBe('ta personne')
+
+    // Léo supprime aussi son compte : le duo, sans plus aucun membre, disparaît.
+    await supprimerCompte(await requete(payload), h.leo.id, MOT_DE_PASSE)
+    expect((await payload.count({ collection: 'duos' })).totalDocs).toBe(0)
+    expect((await payload.count({ collection: 'mots' })).totalDocs).toBe(0)
   })
 })
