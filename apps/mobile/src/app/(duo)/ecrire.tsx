@@ -1,4 +1,10 @@
-import { libellesJour, LIMITES, type MotProgramme, TypeMot } from '@billets-doux/shared'
+import {
+  formaterHeure,
+  libellesJour,
+  LIMITES,
+  type MotProgramme,
+  TypeMot,
+} from '@billets-doux/shared'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
@@ -28,6 +34,7 @@ import { Texte } from '@/components/Texte'
 import { boiteAuxLettres } from '@/lib/boiteAuxLettres'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
+import { messageFlash } from '@/lib/messageFlash'
 import { useSourcePhoto } from '@/lib/sourcePhoto'
 import { choisirPhoto, PermissionRefusee } from '@/lib/photo'
 import { televerser } from '@/lib/televersement'
@@ -185,6 +192,37 @@ function Editeur({
     revenir()
   }
 
+  // Ouvert depuis une case du calendrier : le jour est déjà choisi, on programme directement.
+  const jourDirect =
+    !initial.programmation && jourDemande && modeDemande !== 'ouvre_quand' ? jourDemande : null
+  const [programmation, setProgrammation] = useState(false)
+
+  const programmerDirectement = async () => {
+    if (!jourDirect) return
+    if (brouillon.estVide) {
+      setMessage('Écris quelques mots, ou joins une photo ou un vocal, avant de programmer.')
+      return
+    }
+    setProgrammation(true)
+    setMessage(null)
+    try {
+      const id = await brouillon.forcer()
+      if (!id) return
+      const [, cal] = await Promise.all([
+        api.programmer(id, { mode: 'date', jour: jourDirect }),
+        api.calendrier(),
+      ])
+      messageFlash.deposer(
+        `Programmé pour ${libellesJour(jourDirect).court} à ${formaterHeure(cal.destinataire.heureDecouverte)}`,
+      )
+      router.dismissTo('/pour-toi')
+    } catch (e) {
+      setMessage(messageErreur(e))
+    } finally {
+      setProgrammation(false)
+    }
+  }
+
   /** Enregistre, puis passe à l'écran 3.5 « Quand l'ouvrir ? ». */
   const choisirQuand = async () => {
     if (brouillon.estVide) {
@@ -236,12 +274,32 @@ function Editeur({
         <>
           {/* Même poids pour les deux choix. Côte à côte, chaque bouton n'aurait que ~79 dp
               pour son libellé à 360 dp (~160 dp nécessaires) : empilés, Principal au-dessus. */}
-          <Bouton
-            libelle={initial.programmation ? 'Changer quand l’ouvrir' : 'Choisir quand l’ouvrir'}
-            Icone={Calendrier}
-            pleineLargeur
-            onPress={() => void choisirQuand()}
-          />
+          {jourDirect ? (
+            <>
+              {/* « Programmer pour dimanche 30 » : 226 px pour 244 disponibles à 360 dp ;
+                  avec un texte agrandi, le libellé passe sur deux lignes. */}
+              <Bouton
+                libelle={`Programmer pour ${libellesJour(jourDirect).court}`}
+                Icone={Calendrier}
+                pleineLargeur
+                enCours={programmation}
+                onPress={() => void programmerDirectement()}
+              />
+              <Bouton
+                libelle="Changer la date"
+                variante="discret"
+                pleineLargeur
+                onPress={() => void choisirQuand()}
+              />
+            </>
+          ) : (
+            <Bouton
+              libelle={initial.programmation ? 'Changer quand l’ouvrir' : 'Choisir quand l’ouvrir'}
+              Icone={Calendrier}
+              pleineLargeur
+              onPress={() => void choisirQuand()}
+            />
+          )}
           <Bouton
             libelle={initial.programmation ? 'Terminé' : 'Garder dans la réserve'}
             Icone={initial.programmation ? Valider : Boite}

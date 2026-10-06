@@ -1,13 +1,14 @@
 import { type CalendrierAuteur, libellesJour, type Rythme } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { AccessibilityInfo, ActivityIndicator, StyleSheet, View } from 'react-native'
 
 import Boite from '@/assets/icons/Boite.svg'
 import Cloche from '@/assets/icons/Cloche.svg'
 import Lune from '@/assets/icons/Lune.svg'
 import Plus from '@/assets/icons/Plus.svg'
 import Suivant from '@/assets/icons/Suivant.svg'
+import Valider from '@/assets/icons/Valider.svg'
 import { Alerte } from '@/components/Alerte'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
@@ -20,6 +21,7 @@ import { Texte } from '@/components/Texte'
 import { type CaseAuteur, construireCases, resumer } from '@/lib/calendrier'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
+import { messageFlash } from '@/lib/messageFlash'
 import { TYPES_DE_MOT } from '@/lib/typesDeMot'
 import { couleurs, rayons } from '@/theme/tokens'
 
@@ -41,10 +43,19 @@ const ETAT_CASE: Record<CaseAuteur['etat'], EtatCase> = {
 export default function PourToi() {
   const [cal, setCal] = useState<CalendrierAuteur | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
+  const [confirmation, setConfirmation] = useState<string | null>(null)
 
   useFocusEffect(
     useCallback(() => {
       let annule = false
+      // Retour d'Écrire après une programmation directe : « Programmé pour mercredi 7 à 8 h ».
+      const flash = messageFlash.prendre()
+      let effacer: ReturnType<typeof setTimeout> | undefined
+      if (flash) {
+        setConfirmation(flash)
+        AccessibilityInfo.announceForAccessibility(flash)
+        effacer = setTimeout(() => setConfirmation(null), 5000)
+      }
       api
         .calendrier()
         .then((c) => {
@@ -58,6 +69,7 @@ export default function PourToi() {
         })
       return () => {
         annule = true
+        if (effacer) clearTimeout(effacer)
       }
     }, []),
   )
@@ -146,6 +158,14 @@ export default function PourToi() {
       </View>
 
       {erreur ? <Alerte message={erreur} /> : null}
+      {confirmation ? (
+        <View style={styles.confirmation} accessibilityLiveRegion="polite">
+          <BoutonRond Icone={Valider} fond={couleurs.decor.sauge} />
+          <Texte variante="labelM" style={styles.flex}>
+            {confirmation}
+          </Texte>
+        </View>
+      ) : null}
 
       {resume.prets > 0 && resume.jusquAu ? (
         <View
@@ -296,6 +316,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: couleurs.trait.ligne,
     backgroundColor: couleurs.fond.carte,
+  },
+  confirmation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: rayons.carte,
+    borderWidth: 1,
+    borderColor: couleurs.trait.ligne,
+    backgroundColor: couleurs.fond.carte,
+  },
+  flex: {
+    flex: 1,
   },
   actions: {
     flexDirection: 'row',

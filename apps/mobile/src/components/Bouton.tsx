@@ -56,7 +56,7 @@ export function Bouton({
         ) : Icone ? (
           <Icone width={20} height={20} color={couleurTexte} />
         ) : null}
-        <Texte variante="labelM" couleur={couleurTexte}>
+        <Texte variante="labelM" couleur={couleurTexte} style={styles.libelle}>
           {libelle}
         </Texte>
       </View>
@@ -91,5 +91,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+  },
+  // Texte agrandi par le système : le libellé passe à la ligne au lieu d'être coupé.
+  libelle: {
+    flexShrink: 1,
+    textAlign: 'center',
   },
 })
