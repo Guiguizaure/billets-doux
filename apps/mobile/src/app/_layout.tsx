@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { Platform } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { ChoixProvider } from '@/components/Choix'
 import { DialogueProvider } from '@/components/Dialogue'
 import { SessionProvider, useSession } from '@/session/SessionProvider'
 import { fichiersPolices } from '@/theme/polices'
@@ -29,8 +30,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SessionProvider>
         <DialogueProvider>
-          <StatusBar style="dark" />
-          {policesPretes ? <Navigation /> : null}
+          <ChoixProvider>
+            <StatusBar style="dark" />
+            {policesPretes ? <Navigation /> : null}
+          </ChoixProvider>
         </DialogueProvider>
       </SessionProvider>
     </SafeAreaProvider>

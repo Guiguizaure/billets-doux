@@ -14,10 +14,10 @@ import { Ecran } from '@/components/Ecran'
 import { EnTete } from '@/components/EnTete'
 import { Texte } from '@/components/Texte'
 import { api } from '@/lib/client'
-import { choisirSourcePhoto } from '@/lib/dialogue'
 import { enregistrementPossible, useEnregistreur } from '@/lib/enregistreur'
 import { messageErreur } from '@/lib/formulaires'
 import { choisirPhoto, PermissionRefusee } from '@/lib/photo'
+import { useSourcePhoto } from '@/lib/sourcePhoto'
 import { televerser } from '@/lib/televersement'
 import { couleurs, rayons } from '@/theme/tokens'
 
@@ -30,6 +30,7 @@ export default function Reserve() {
   const [erreur, setErreur] = useState<string | null>(null)
   const [annonce, setAnnonce] = useState<string | null>(null)
   const [envoi, setEnvoi] = useState<string | null>(null)
+  const choisirSourcePhoto = useSourcePhoto()
   const enregistreur = useEnregistreur()
   /** Le doigt est-il encore posé sur le micro ? (il peut se lever pendant la demande d'accès) */
   const appuye = useRef(false)
