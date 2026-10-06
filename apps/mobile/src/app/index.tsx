@@ -15,6 +15,8 @@ export default function Aiguillage() {
     case 'visiteur':
       return <Redirect href="/bienvenue" />
     case 'sansDuo':
+      // Duo fermé : on le dit d'abord ; l'invitation suivante attend qu'on la demande.
+      if (!codeEnAttente && moi?.duo?.statut === 'ferme') return <Redirect href="/duo-ferme" />
       return codeEnAttente ? (
         <Redirect href={{ pathname: '/rejoindre', params: { code: codeEnAttente } }} />
       ) : (

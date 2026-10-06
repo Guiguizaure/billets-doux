@@ -1,0 +1,15 @@
+<svg width="160" height="220" viewBox="0 0 160 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="sablier-etoile">
+<path id="Vector" d="M42 22C42 70 74 96 74 110C74 124 42 150 42 198H118C118 150 86 124 86 110C86 96 118 70 118 22H42Z" fill="#FFFBF3" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" opacity="0.55" d="M54 34H106C104 60 88 78 80 86C72 78 56 60 54 34Z" fill="#A99BE8"/>
+<path id="Vector_3" d="M68 43L69.3 46.7L73 48L69.3 49.3L68 53L66.7 49.3L63 48L66.7 46.7L68 43Z" fill="#F6C453" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M90 38L91.56 42.44L96 44L91.56 45.56L90 50L88.44 45.56L84 44L88.44 42.44L90 38Z" fill="#F6C453" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M80 61.5L81.17 64.83L84.5 66L81.17 67.17L80 70.5L78.83 67.17L75.5 66L78.83 64.83L80 61.5Z" fill="#F6C453" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_6" d="M80 104V168" stroke="#2A2346" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="0.5 10"/>
+<path id="Vector_7" d="M48 196C56 170 104 170 112 196H48Z" fill="#F6C453" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_8" d="M125 10H35C31.134 10 28 13.134 28 17C28 20.866 31.134 24 35 24H125C128.866 24 132 20.866 132 17C132 13.134 128.866 10 125 10Z" fill="#34408F" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_9" d="M125 196H35C31.134 196 28 199.134 28 203C28 206.866 31.134 210 35 210H125C128.866 210 132 206.866 132 203C132 199.134 128.866 196 125 196Z" fill="#34408F" stroke="#2A2346" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_10" d="M140 53L141.82 58.18L147 60L141.82 61.82L140 67L138.18 61.82L133 60L138.18 58.18L140 53Z" fill="#F4A7B9" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_11" d="M18 134L19.56 138.44L24 140L19.56 141.56L18 146L16.44 141.56L12 140L16.44 138.44L18 134Z" fill="#F6C453" stroke="#2A2346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

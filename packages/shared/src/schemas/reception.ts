@@ -65,8 +65,13 @@ export const MotOuvert = z.object({
   /** Jour d'ouverture (null pour une lettre « Ouvre quand… »). */
   jour: z.string().nullable(),
   titreOuvreQuand: z.string().nullable(),
-  ouvertLe: z.string(),
+  /** null pour un mot jamais envoyé (duo fermé), relu par son auteur. */
+  ouvertLe: z.string().nullable(),
   ouvertAvecJoker: z.boolean(),
+  /** Brouillon ou mot programmé d'un duo fermé : lecture seule, pour son auteur. */
+  jamaisEnvoye: z.boolean().default(false),
+  /** Réagir et répondre : seulement le destinataire, et seulement dans le duo en cours. */
+  peutRepondre: z.boolean().default(false),
   auteur: z.object({ prenom: z.string() }),
   destinataire: z.object({ prenom: z.string() }),
   /** Vrai quand c'est l'auteur qui relit son propre mot. */

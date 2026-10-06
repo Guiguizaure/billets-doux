@@ -14,6 +14,7 @@ import { Reponses } from './collections/Reponses'
 import { Users } from './collections/Users'
 import { comptesEndpoints } from './endpoints/comptes'
 import { health } from './endpoints/health'
+import { souvenirsEndpoints } from './endpoints/souvenirs'
 import { releverRecus } from './services/notifications'
 import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
 
@@ -39,7 +40,7 @@ export default buildConfig({
     fallbackLanguage: 'fr',
   },
   collections: [Admins, Users, Duos, Mots, Medias, Reponses, EnvoisPush],
-  endpoints: [health, ...comptesEndpoints],
+  endpoints: [health, ...comptesEndpoints, ...souvenirsEndpoints],
   cors: corsOrigins,
   csrf: corsOrigins,
   secret: process.env.PAYLOAD_SECRET || '',

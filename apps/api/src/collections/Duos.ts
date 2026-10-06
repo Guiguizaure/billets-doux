@@ -1,7 +1,15 @@
 import { DuoStatut, Rythme } from '@billets-doux/shared'
 import type { CollectionConfig } from 'payload'
 
-import { inviterEndpoint, rejoindreEndpoint } from '@/endpoints/duos'
+import {
+  fermetureEndpoint,
+  inviterEndpoint,
+  nousDeuxEndpoint,
+  pauseEndpoint,
+  rejoindreEndpoint,
+  repriseEndpoint,
+  retrouvaillesEndpoint,
+} from '@/endpoints/duos'
 
 import { isAdmin } from './Admins'
 
@@ -22,7 +30,15 @@ export const Duos: CollectionConfig = {
     update: isAdmin,
     delete: isAdmin,
   },
-  endpoints: [inviterEndpoint, rejoindreEndpoint],
+  endpoints: [
+    inviterEndpoint,
+    rejoindreEndpoint,
+    nousDeuxEndpoint,
+    pauseEndpoint,
+    repriseEndpoint,
+    fermetureEndpoint,
+    retrouvaillesEndpoint,
+  ],
   fields: [
     {
       name: 'membres',
@@ -69,10 +85,23 @@ export const Duos: CollectionConfig = {
       admin: { date: { pickerAppearance: 'dayAndTime' } },
     },
     {
+      // Un jour (« 2026-10-31 »), pas un instant : il se lit pareil dans les deux fuseaux.
       name: 'retrouvailles',
-      label: 'Date des retrouvailles',
-      type: 'date',
+      label: 'Jour des retrouvailles',
+      type: 'text',
+      validate: (valeur: string | null | undefined) =>
+        !valeur || /^\d{4}-\d{2}-\d{2}$/.test(valeur) || 'Jour invalide (AAAA-MM-JJ).',
     },
+    {
+      // Seule la personne qui a mis la pause peut la lever.
+      name: 'pausePar',
+      label: 'Mis en pause par',
+      type: 'relationship',
+      relationTo: 'users',
+    },
+    { name: 'pauseDepuis', label: 'En pause depuis', type: 'date' },
+    { name: 'fermePar', label: 'Fermé par', type: 'relationship', relationTo: 'users' },
+    { name: 'fermeLe', label: 'Fermé le', type: 'date' },
     {
       name: 'rythmes',
       label: 'Rythme du calendrier de chacun',

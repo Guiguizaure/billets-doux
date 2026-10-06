@@ -1,5 +1,5 @@
 import { LIMITES, libellesJour, type MotOuvert, type Reaction } from '@billets-doux/shared'
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
+import { Redirect, router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
 
@@ -24,6 +24,7 @@ import { api } from '@/lib/client'
 import { enregistrementPossible } from '@/lib/enregistreur'
 import { messageErreur } from '@/lib/formulaires'
 import { TYPES_DE_MOT } from '@/lib/typesDeMot'
+import { useSession } from '@/session/SessionProvider'
 import { familles } from '@/theme/polices'
 import { couleurs, rayons } from '@/theme/tokens'
 
@@ -35,6 +36,14 @@ const majuscule = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
  * `?suite=` : d'autres mots attendent leur rituel, ouverts en revenant.
  */
 export default function LireMot() {
+  const { phase } = useSession()
+  // Hors des groupes : se lit avec ou sans duo (souvenirs après une fermeture).
+  if (phase === 'chargement') return null
+  if (phase !== 'duo' && phase !== 'sansDuo') return <Redirect href="/" />
+  return <Lecture />
+}
+
+function Lecture() {
   const { id, suite } = useLocalSearchParams<{ id: string; suite?: string }>()
   const [mot, setMot] = useState<MotOuvert | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -66,7 +75,7 @@ export default function LireMot() {
         params: { id: suivant, suite: reste.join(',') },
       })
     } else if (router.canGoBack()) router.back()
-    else router.replace(mot?.vuParAuteur ? '/pour-toi' : '/pour-moi')
+    else router.replace('/')
   }
 
   if (!mot) {
@@ -81,7 +90,9 @@ export default function LireMot() {
   const auteur = mot.auteur.prenom
   const date = mot.jour
     ? majuscule(libellesJour(mot.jour).long)
-    : `Ouvre quand ${mot.titreOuvreQuand ?? ''}`
+    : mot.titreOuvreQuand
+      ? `Ouvre quand ${mot.titreOuvreQuand}`
+      : 'Jamais envoyé'
   const reponse = mot.reponse
   const aRepondu = Boolean(reponse?.texte || reponse?.vocal)
 
@@ -103,7 +114,7 @@ export default function LireMot() {
   }
 
   const actionRepondre =
-    mot.vuParAuteur || aRepondu ? null : mot.type === 'vocal' && enregistrementPossible ? (
+    !mot.peutRepondre || aRepondu ? null : mot.type === 'vocal' && enregistrementPossible ? (
       <Bouton
         libelle="Répondre en vocal"
         Icone={Vocal}
@@ -137,16 +148,24 @@ export default function LireMot() {
 
       {erreur ? <Alerte message={erreur} /> : null}
 
-      {mot.vuParAuteur ? (
+      {mot.jamaisEnvoye ? (
+        <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
+          Jamais envoyé : ce mot est resté dans ton tiroir quand le duo s’est fermé. Personne
+          d’autre ne le voit.
+        </Texte>
+      ) : mot.vuParAuteur ? (
         <ReponseVue mot={mot} />
-      ) : (
+      ) : mot.peutRepondre ? (
         <>
           <Reactions valeur={reponse?.reaction ?? null} onChange={(r) => void reagir(r)} />
           {aRepondu && reponse ? (
             <CarteReponse titre="TA RÉPONSE" reponse={{ ...reponse, reaction: null }} />
           ) : null}
         </>
-      )}
+      ) : reponse && (reponse.reaction || reponse.texte || reponse.vocal) ? (
+        // Duo fermé : la réponse se relit, on n'y touche plus.
+        <CarteReponse titre="TA RÉPONSE" reponse={reponse} />
+      ) : null}
 
       <FeuilleReponse
         visible={feuille}

@@ -18,7 +18,7 @@ export const RetraitAppareil = z.object({ jeton: JetonPush })
  * jamais le contenu d'un mot.
  */
 export const DonneesNotification = z.object({
-  lien: z.enum(['/pour-moi', '/pour-toi']).or(z.string().regex(/^\/mot\/[a-f0-9]{24}$/)),
+  lien: z.enum(['/', '/pour-moi', '/pour-toi']).or(z.string().regex(/^\/mot\/[a-f0-9]{24}$/)),
   /** Mots du jour : relance le rituel même si l'appli était déjà ouverte. */
   rituel: z.boolean().optional(),
 })

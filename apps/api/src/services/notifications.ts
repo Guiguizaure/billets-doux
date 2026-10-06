@@ -12,6 +12,7 @@ export type Evenement =
   | { type: 'mots_ouvrables'; expediteur: string; nombre: number }
   | { type: 'reponse'; de: string; motId: string }
   | { type: 'rappel_doux'; destinataire: string }
+  | { type: 'duo_ferme' }
 
 export type MessagePush = {
   to: string
@@ -82,6 +83,9 @@ export function message(evenement: Evenement): { titre: string; donnees: Donnees
         titre: `Le calendrier de ${evenement.destinataire} se vide un peu`,
         donnees: { lien: '/pour-toi' },
       }
+    // Simplement le fait, sans détail (brief).
+    case 'duo_ferme':
+      return { titre: 'Le duo est fermé', donnees: { lien: '/' } }
   }
 }
 
