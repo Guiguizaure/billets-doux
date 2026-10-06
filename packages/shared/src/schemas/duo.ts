@@ -44,5 +44,12 @@ export const VueDuo = z.object({
     })
     .nullable(),
   partenaire: z.object({ prenom: z.string() }).nullable(),
+  /** Jour des retrouvailles (« 2026-10-31 »), commun au duo. */
+  retrouvailles: z.string().nullable().default(null),
+  /** Duo en pause : qui l'a mise (seule cette personne peut la lever) et depuis quand. */
+  pause: z
+    .object({ parMoi: z.boolean(), prenom: z.string(), depuis: z.string() })
+    .nullable()
+    .default(null),
 })
 export type VueDuo = z.infer<typeof VueDuo>

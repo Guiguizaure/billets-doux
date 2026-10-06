@@ -17,7 +17,11 @@ export const ModeMot = z.enum(['date', 'semaine_hasard', 'ouvre_quand', 'brouill
 export type ModeMot = z.infer<typeof ModeMot>
 
 /** Cycle de vie d'un mot. */
-export const StatutMot = z.enum(['brouillon', 'programme', 'ouvert'])
+/**
+ * `non_envoye` : brouillon ou mot programmé d'un duo fermé. Il reste à son auteur, en lecture
+ * seule (souvenirs « Jamais envoyés », export) ; le destinataire n'y a jamais accès.
+ */
+export const StatutMot = z.enum(['brouillon', 'programme', 'ouvert', 'non_envoye'])
 export type StatutMot = z.infer<typeof StatutMot>
 
 /** Réactions possibles à un mot ouvert. */

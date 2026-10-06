@@ -18,6 +18,13 @@ import {
   VueMedia,
   VueMotAuteur,
 } from '../schemas/mots'
+import {
+  Export,
+  type Retrouvailles,
+  Souvenirs,
+  type SuppressionCompte,
+  VueNousDeux,
+} from '../schemas/duree'
 import { type Appareil } from '../schemas/notifications'
 import { CalendrierAuteur, MotProgramme, type Programmation } from '../schemas/programmation'
 import { CalendrierDestinataire, MotOuvert, type Repondre, VueReponse } from '../schemas/reception'
@@ -109,6 +116,19 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
     /** À la déconnexion : cet appareil ne reçoit plus rien. */
     retirerAppareil: (jeton: string) =>
       appel(z.object({ ok: z.literal(true) }), 'POST', '/api/comptes/appareils/retrait', { jeton }),
+    /** Écran 5.1 « Nous deux ». */
+    nousDeux: () => appel(VueNousDeux, 'GET', '/api/duos/nous-deux'),
+    mettreEnPause: () => appel(Moi, 'POST', '/api/duos/pause'),
+    /** Seule la personne qui a mis la pause peut la lever. */
+    reprendre: () => appel(Moi, 'POST', '/api/duos/reprise'),
+    fermerDuo: () => appel(Moi, 'POST', '/api/duos/fermeture'),
+    fixerRetrouvailles: (retrouvailles: Retrouvailles) =>
+      appel(Moi, 'PUT', '/api/duos/retrouvailles', retrouvailles),
+    souvenirs: () => appel(Souvenirs, 'GET', '/api/souvenirs'),
+    /** Fabrique l'archive ZIP des souvenirs et renvoie une URL de téléchargement signée. */
+    exporter: () => appel(Export, 'POST', '/api/souvenirs/export'),
+    supprimerCompte: (confirmation: SuppressionCompte) =>
+      appel(z.object({ ok: z.literal(true) }), 'POST', '/api/comptes/suppression', confirmation),
     /** Ferme la session côté serveur (route d'authentification de Payload). */
     deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }

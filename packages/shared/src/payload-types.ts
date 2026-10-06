@@ -248,6 +248,10 @@ export interface Duo {
   codeExpireLe: string;
   rejointLe?: string | null;
   retrouvailles?: string | null;
+  pausePar?: (string | null) | User;
+  pauseDepuis?: string | null;
+  fermePar?: (string | null) | User;
+  fermeLe?: string | null;
   rythmes?:
     | {
         membre: string | User;
@@ -283,7 +287,7 @@ export interface Mot {
   semaineFin?: string | null;
   unlockAt?: string | null;
   titreOuvreQuand?: string | null;
-  statut: 'brouillon' | 'programme' | 'ouvert';
+  statut: 'brouillon' | 'programme' | 'ouvert' | 'non_envoye';
   openedAt?: string | null;
   ouvertAvecJoker?: boolean | null;
   notifiedAt?: string | null;
@@ -624,6 +628,10 @@ export interface DuosSelect<T extends boolean = true> {
   codeExpireLe?: T;
   rejointLe?: T;
   retrouvailles?: T;
+  pausePar?: T;
+  pauseDepuis?: T;
+  fermePar?: T;
+  fermeLe?: T;
   rythmes?:
     | T
     | {

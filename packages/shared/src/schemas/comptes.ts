@@ -36,6 +36,11 @@ export type Session = z.infer<typeof Session>
 
 export const MiseAJourCompte = z.object({
   heureDecouverte: HeureDecouverte.optional(),
+  /** Mis à jour tout seul quand le fuseau du téléphone change (voyage, déménagement). */
+  fuseauHoraire: z.string().min(1).optional(),
+  reglages: z
+    .object({ rappelDoux: z.boolean().optional(), indicesVisibles: z.boolean().optional() })
+    .optional(),
 })
 export type MiseAJourCompte = z.infer<typeof MiseAJourCompte>
 
@@ -48,6 +53,9 @@ export const Moi = z.object({
     heureDecouverte: z.string(),
     /** L'heure a été confirmée (écran 1.3) : on ne le remontre plus. */
     heureConfirmee: z.boolean(),
+    reglages: z
+      .object({ rappelDoux: z.boolean(), indicesVisibles: z.boolean() })
+      .default({ rappelDoux: true, indicesVisibles: true }),
   }),
   duo: VueDuo.nullable(),
 })
