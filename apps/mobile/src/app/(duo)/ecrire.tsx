@@ -11,6 +11,7 @@ import BordureParAvion from '@/assets/illustrations/bordure-par-avion.svg'
 import { Alerte } from '@/components/Alerte'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRondAction } from '@/components/BoutonRondAction'
+import { useConfirmer } from '@/components/Dialogue'
 import { Champ } from '@/components/Champ'
 import { Ecran } from '@/components/Ecran'
 import { EnTete } from '@/components/EnTete'
@@ -23,7 +24,7 @@ import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
 import { boiteAuxLettres } from '@/lib/boiteAuxLettres'
 import { api } from '@/lib/client'
-import { choisirSourcePhoto, confirmer } from '@/lib/dialogue'
+import { choisirSourcePhoto } from '@/lib/dialogue'
 import { messageErreur } from '@/lib/formulaires'
 import { choisirPhoto, PermissionRefusee } from '@/lib/photo'
 import { televerser } from '@/lib/televersement'
@@ -125,6 +126,7 @@ function Editeur({
   const brouillon = useBrouillon(initial)
   const { champs, modifier } = brouillon
   const [apercu, setApercu] = useState(false)
+  const confirmer = useConfirmer()
   const [envoiPhoto, setEnvoiPhoto] = useState<{ uri: string; progression: number } | null>(null)
   const [erreurMedia, setErreurMedia] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -198,11 +200,11 @@ function Editeur({
   }
 
   const supprimer = async () => {
-    const ok = await confirmer(
-      initial.programmation ? 'Supprimer ce mot ?' : 'Supprimer ce brouillon ?',
-      'Le texte, la photo et le vocal seront effacés. Impossible de revenir en arrière.',
-      'Supprimer',
-    )
+    const ok = await confirmer({
+      titre: initial.programmation ? 'Supprimer ce mot ?' : 'Supprimer ce brouillon ?',
+      message: 'Le texte, la photo et le vocal seront effacés. Impossible de revenir en arrière.',
+      action: 'Supprimer',
+    })
     if (!ok) return
     try {
       await brouillon.supprimer()

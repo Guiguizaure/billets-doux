@@ -23,6 +23,7 @@ import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
+import { useConfirmer } from '@/components/Dialogue'
 import { Feuille } from '@/components/Feuille'
 import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
@@ -36,7 +37,6 @@ import {
   resumerRecu,
 } from '@/lib/calendrierRecu'
 import { api } from '@/lib/client'
-import { confirmer } from '@/lib/dialogue'
 import { messageErreur } from '@/lib/formulaires'
 import { TYPES_DE_MOT } from '@/lib/typesDeMot'
 import { useSession } from '@/session/SessionProvider'
@@ -73,6 +73,7 @@ export default function PourMoi() {
   const [erreur, setErreur] = useState<string | null>(null)
   const [periodeChoisie, setPeriodeChoisie] = useState<string | null>(null)
   const [scellee, setScellee] = useState<CaseRecue | null>(null)
+  const confirmer = useConfirmer()
 
   useFocusEffect(
     useCallback(() => {
@@ -123,14 +124,15 @@ export default function PourMoi() {
   }
 
   const utiliserJoker = async (kase: CaseRecue) => {
-    const ok = await confirmer(
-      'Utiliser ton joker ?',
-      `Tu en as un par mois. ${prenom} verra que tu as ouvert ce mot en avance.`,
-      'Ouvrir maintenant',
-    )
-    if (!ok) return
+    // La feuille se ferme d'abord : jamais deux fenêtres l'une sur l'autre.
     setScellee(null)
-    ouvrirRituel([kase.id], true)
+    const ok = await confirmer({
+      titre: 'Utiliser ton joker ?',
+      message: `Tu en as un par mois. ${prenom} verra que tu as ouvert ce mot en avance.`,
+      action: 'Ouvrir',
+    })
+    if (ok) ouvrirRituel([kase.id], true)
+    else setScellee(kase)
   }
 
   const lettresFermees = cal.lettres.filter((l) => l.etat === 'scelle').length
