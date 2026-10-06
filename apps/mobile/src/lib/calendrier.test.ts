@@ -64,6 +64,22 @@ describe('cases du calendrier de l’auteur', () => {
     expect(cases[2]?.jourCible).toBe('2026-10-17')
   })
 
+  it('case lue : la réponse, puis le joker, passent avant l’heure ; la réaction remplace l’icône', () => {
+    const lu = (extra: Partial<MotProgramme>) =>
+      construireCases(
+        calendrier([{ ...mot('a', date('2026-10-15'), '2026-10-15T06:02:00.000Z'), ...extra }]),
+      )[0]
+    const reponse = { reaction: 'lune' as const, texte: null, vocal: null, envoyeeLe: null }
+    expect(lu({ reponse })).toMatchObject({ info: 'lu à 8 h', reaction: 'lune' })
+    expect(lu({ ouvertAvecJoker: true })).toMatchObject({ info: 'joker', reaction: null })
+    expect(lu({ ouvertAvecJoker: true, reponse: { ...reponse, texte: 'Merci' } })?.info).toBe(
+      'répondu',
+    )
+    expect(lu({ reponse })?.libelleAccessible).toBe(
+      'jeudi 15 octobre, lu à 8 h, réaction : lune, touche pour relire',
+    )
+  })
+
   it('aujourd’hui sans mot et heure passée : case « passée », impossible d’y écrire', () => {
     const vide = construireCases(calendrier([]))
     expect(vide[0]).toMatchObject({ etat: 'passee', jourCible: null })

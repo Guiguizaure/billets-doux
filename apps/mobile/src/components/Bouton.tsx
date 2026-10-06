@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, Ref } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
@@ -16,6 +16,8 @@ type Props = {
   enCours?: boolean
   pleineLargeur?: boolean
   accessibilityHint?: string
+  /** Pour donner le focus au bouton (ex. : « Annuler » à l'ouverture d'un dialogue). */
+  ref?: Ref<View>
 }
 
 /** Composant Figma « Bouton » (Principal, Secondaire, Discret). */
@@ -28,11 +30,13 @@ export function Bouton({
   enCours,
   pleineLargeur,
   accessibilityHint,
+  ref,
 }: Props) {
   const couleurTexte = variante === 'principal' ? couleurs.texte.surCachet : couleurs.texte.encre
   const inactif = desactive || enCours
   return (
     <Pressable
+      ref={ref}
       accessibilityRole="button"
       accessibilityLabel={libelle}
       accessibilityHint={accessibilityHint}

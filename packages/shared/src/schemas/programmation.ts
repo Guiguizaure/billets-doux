@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { estJourValide } from '../dates'
 import { Rythme } from '../enums'
 import { VueMotAuteur } from './mots'
+import { VueReponse } from './reception'
 
 export const TITRE_OUVRE_QUAND_MAX = 60
 
@@ -46,6 +47,9 @@ export const MotProgramme = VueMotAuteur.extend({
   programmation: VueProgrammation,
   /** Ouvert par le destinataire : quand (et, une fois ouvert, le jour n'est plus secret). */
   ouvertLe: z.string().nullable(),
+  ouvertAvecJoker: z.boolean().default(false),
+  /** La réaction et la réponse du destinataire, une fois le mot ouvert. */
+  reponse: VueReponse.nullable().default(null),
 })
 export type MotProgramme = z.infer<typeof MotProgramme>
 

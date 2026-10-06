@@ -128,12 +128,17 @@ describe('« Dans la semaine »', () => {
     )
 
     // Ni la réponse ni le calendrier ne contiennent le jour tiré ou l'instant d'ouverture.
+    // Les bornes de la fenêtre sont publiques (le jour tiré peut tomber dessus) : on les retire.
     const cal = await calendrier(await requete(payload), lina.id, MAINTENANT)
-    for (const vue of [JSON.stringify(programme), JSON.stringify(cal)]) {
-      expect(vue).not.toContain(secret.unlockAt!)
-      expect(vue).not.toContain(`"${secret.jourOuverture}"`)
-      expect(vue).not.toContain('unlockAt":"2026')
+    for (const vue of [programme, cal.mots[0]]) {
+      const brut = JSON.stringify(vue)
+        .replace('"debut":"2026-10-16"', '')
+        .replace('"fin":"2026-10-22"', '')
+      expect(brut).not.toContain(secret.unlockAt!)
+      expect(brut).not.toContain(`"${secret.jourOuverture}"`)
+      expect(brut).not.toMatch(/unlockAt|jourOuverture|"jour"/)
     }
+    expect(JSON.stringify(cal)).not.toContain(secret.unlockAt!)
   })
 })
 

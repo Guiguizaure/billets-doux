@@ -15,6 +15,7 @@ import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
 import { LienTexte } from '@/components/LienTexte'
 import { Puce } from '@/components/Puce'
+import { REACTIONS } from '@/components/Reactions'
 import { Texte } from '@/components/Texte'
 import { type CaseAuteur, construireCases, resumer } from '@/lib/calendrier'
 import { api } from '@/lib/client'
@@ -84,6 +85,16 @@ export default function PourToi() {
   const cases = construireCases(cal)
 
   const ouvrirCase = (c: CaseAuteur) => {
+    // Case lue : on relit le mot, avec la réaction et la réponse (d'abord celui qui en a une).
+    const lu =
+      c.etat === 'ouverte'
+        ? (c.mots.find((m) => m.reponse?.texte || m.reponse?.vocal || m.reponse?.reaction) ??
+          c.mots.at(-1))
+        : undefined
+    if (lu) {
+      router.push({ pathname: '/mot/[id]', params: { id: lu.id } })
+      return
+    }
     const premier = c.mots.find((m) => !m.ouvertLe)
     if (premier) router.push({ pathname: '/ecrire', params: { id: premier.id } })
     else if (c.jourCible) router.push({ pathname: '/ecrire', params: { jour: c.jourCible } })
@@ -188,9 +199,15 @@ export default function PourToi() {
               jourSemaine={c.titre}
               jour={c.chiffre}
               info={c.info}
-              Icone={premier ? TYPES_DE_MOT[premier.type].Icone : undefined}
+              Icone={
+                c.reaction
+                  ? REACTIONS[c.reaction].Icone
+                  : premier
+                    ? TYPES_DE_MOT[premier.type].Icone
+                    : undefined
+              }
               libelleAccessible={c.libelleAccessible}
-              onPress={c.etat === 'libre' || c.etat === 'prete' ? () => ouvrirCase(c) : undefined}
+              onPress={c.etat === 'passee' ? undefined : () => ouvrirCase(c)}
             />
           )
         })}

@@ -6,6 +6,7 @@ import {
   libellesJour,
   lundiDe,
   type MotProgramme,
+  type Reaction,
   type Rythme,
 } from '@billets-doux/shared'
 
@@ -22,11 +23,20 @@ export type CaseAuteur = {
   fin: string
   etat: EtatCaseAuteur
   mots: MotProgramme[]
-  /** « lu à 8 h », « prête », « 2 prêtes », « libre ». */
+  /** « lu à 8 h », « répondu », « joker », « prête », « 2 prêts », « libre ». */
   info: string
+  /** Réaction du destinataire à un mot lu : remplace l'icône du type dans la pastille. */
+  reaction: Reaction | null
   /** Jour proposé pour écrire dans une case libre (le premier encore programmable). */
   jourCible: string | null
   libelleAccessible: string
+}
+
+export const NOMS_REACTIONS: Record<Reaction, string> = {
+  coeur: 'cœur',
+  lune: 'lune',
+  etoile: 'étoile',
+  etincelle: 'étincelle',
 }
 
 const NOMBRE_DE_CASES: Record<Rythme, number> = { jour: 14, semaine: 8, mois: 6 }
@@ -44,13 +54,16 @@ export function construireCases(cal: CalendrierAuteur, rythme: Rythme = cal.ryth
 
     let etat: EtatCaseAuteur
     let info: string
+    const reaction = ouverts.map((m) => m.reponse?.reaction).find(Boolean) ?? null
     if (mots.length > 0 && ouverts.length === mots.length) {
       etat = 'ouverte'
       const dernier = ouverts.at(-1)?.ouvertLe
+      if (ouverts.some((m) => m.reponse?.texte || m.reponse?.vocal)) info = 'répondu'
+      else if (ouverts.some((m) => m.ouvertAvecJoker)) info = 'joker'
       // Heure ronde seulement (« lu à 8 h ») : la case est étroite.
-      info = dernier
-        ? `lu à ${Number(heureLocale(new Date(dernier), cal.destinataire.fuseauHoraire).slice(0, 2))} h`
-        : 'lu'
+      else if (dernier) {
+        info = `lu à ${Number(heureLocale(new Date(dernier), cal.destinataire.fuseauHoraire).slice(0, 2))} h`
+      } else info = 'lu'
     } else if (mots.length > 0) {
       etat = 'prete'
       const prets = mots.length - ouverts.length
@@ -65,7 +78,13 @@ export function construireCases(cal: CalendrierAuteur, rythme: Rythme = cal.ryth
 
     const quoi =
       etat === 'ouverte'
-        ? `${info}`
+        ? [
+            info === 'joker' ? 'ouvert en avance avec le joker' : info,
+            reaction ? `réaction : ${NOMS_REACTIONS[reaction]}` : null,
+            'touche pour relire',
+          ]
+            .filter(Boolean)
+            .join(', ')
         : etat === 'prete'
           ? `${mots.length} mot${mots.length > 1 ? 's' : ''} prêt${mots.length > 1 ? 's' : ''}`
           : etat === 'libre'
@@ -80,6 +99,7 @@ export function construireCases(cal: CalendrierAuteur, rythme: Rythme = cal.ryth
       etat,
       mots,
       info,
+      reaction: etat === 'ouverte' ? reaction : null,
       jourCible,
       libelleAccessible: `${nom}, ${quoi}`,
     }

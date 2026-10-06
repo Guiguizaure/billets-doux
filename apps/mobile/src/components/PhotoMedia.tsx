@@ -10,14 +10,17 @@ export function PhotoMedia({
   mediaId = null,
   uriLocale = null,
   description,
+  forme = 'paysage',
 }: {
   mediaId?: string | null
   uriLocale?: string | null
   description: string
+  /** `carre` : la photo d'un polaroïd (2.6). */
+  forme?: 'paysage' | 'carre'
 }) {
   const { url, erreur } = useUrlMedia(mediaId, uriLocale)
   return (
-    <View style={styles.cadre}>
+    <View style={[styles.cadre, forme === 'carre' && styles.carre]}>
       {url ? (
         <Image
           source={{ uri: url }}
@@ -45,6 +48,10 @@ const styles = StyleSheet.create({
     backgroundColor: couleurs.fond.papierOmbre,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  carre: {
+    aspectRatio: 1,
+    borderRadius: 2,
   },
   image: {
     width: '100%',

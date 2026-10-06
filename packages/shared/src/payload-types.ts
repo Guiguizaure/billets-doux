@@ -73,6 +73,7 @@ export interface Config {
     duos: Duo;
     mots: Mot;
     medias: Media;
+    reponses: Reponse;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -85,6 +86,7 @@ export interface Config {
     duos: DuosSelect<false> | DuosSelect<true>;
     mots: MotsSelect<false> | MotsSelect<true>;
     medias: MediasSelect<false> | MediasSelect<true>;
+    reponses: ReponsesSelect<false> | ReponsesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -179,6 +181,7 @@ export interface User {
   heureDecouverte: string;
   heureConfirmee?: boolean | null;
   duo?: (string | null) | Duo;
+  dernierJokerLe?: string | null;
   reglages?: {
     rappelDoux?: boolean | null;
     indicesVisibles?: boolean | null;
@@ -281,6 +284,21 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reponses".
+ */
+export interface Reponse {
+  id: string;
+  mot: string | Mot;
+  auteur: string | User;
+  reaction?: ('coeur' | 'lune' | 'etoile' | 'etincelle') | null;
+  texte?: string | null;
+  vocal?: (string | null) | Media;
+  envoyeeLe?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -322,6 +340,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'medias';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'reponses';
+        value: string | Reponse;
       } | null);
   globalSlug?: string | null;
   user:
@@ -408,6 +430,7 @@ export interface UsersSelect<T extends boolean = true> {
   heureDecouverte?: T;
   heureConfirmee?: T;
   duo?: T;
+  dernierJokerLe?: T;
   reglages?:
     | T
     | {
@@ -501,6 +524,20 @@ export interface MediasSelect<T extends boolean = true> {
   taille?: T;
   duree?: T;
   statut?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reponses_select".
+ */
+export interface ReponsesSelect<T extends boolean = true> {
+  mot?: T;
+  auteur?: T;
+  reaction?: T;
+  texte?: T;
+  vocal?: T;
+  envoyeeLe?: T;
   updatedAt?: T;
   createdAt?: T;
 }
