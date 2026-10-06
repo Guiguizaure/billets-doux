@@ -18,6 +18,7 @@ import { enTransaction } from '@/lib/transaction'
 
 import { duoCourant } from './duoCourant'
 import { mediaDuProprietaire, vueMedia } from './medias'
+import { notify } from './notifications'
 
 const INTROUVABLE = 'Mot introuvable.'
 
@@ -283,6 +284,13 @@ export async function repondre(
         depth: 1,
         req,
       })
+  // L'auteur est prévenu, sans le texte : « Léo t'a répondu ».
+  const mot = await req.payload.findByID({ collection: 'mots', id: motId, depth: 1, req })
+  const auteurId = idDe(mot.auteur)
+  const destinataire = typeof mot.destinataire === 'object' ? mot.destinataire : null
+  if (auteurId && destinataire) {
+    await notify(req.payload, auteurId, { type: 'reponse', de: destinataire.prenom, motId })
+  }
   return vueReponse(reponse)
 }
 

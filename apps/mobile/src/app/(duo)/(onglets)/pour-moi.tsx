@@ -11,6 +11,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 
+import Cloche from '@/assets/icons/Cloche.svg'
 import Joker from '@/assets/icons/Joker.svg'
 import Lune from '@/assets/icons/Lune.svg'
 import Sablier from '@/assets/icons/Sablier.svg'
@@ -38,6 +39,12 @@ import {
 } from '@/lib/calendrierRecu'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
+import {
+  demanderNotifications,
+  type EtatNotifications,
+  etatNotifications,
+} from '@/lib/notifications'
+import { rituel } from '@/lib/rituel'
 import { TYPES_DE_MOT } from '@/lib/typesDeMot'
 import { useSession } from '@/session/SessionProvider'
 import { couleurs, rayons } from '@/theme/tokens'
@@ -50,11 +57,8 @@ const ETAT_CASE: Record<CaseJour['etat'], EtatCase> = {
   vide: 'vide',
 }
 
-/**
- * Le rituel se propose une fois par lancement de l'appli, si un mot attend :
- * « Plus tard » le repousse au lancement suivant.
- */
-let rituelPropose = false
+/** « Plus tard » sur la carte des notifications : elle revient au lancement suivant. */
+let carteNotificationsMasquee = false
 
 const ouvrirRituel = (ids: string[], joker = false) => {
   const [id, ...suite] = ids
@@ -74,18 +78,23 @@ export default function PourMoi() {
   const [periodeChoisie, setPeriodeChoisie] = useState<string | null>(null)
   const [scellee, setScellee] = useState<CaseRecue | null>(null)
   const confirmer = useConfirmer()
+  const [notifications, setNotifications] = useState<EtatNotifications | null>(null)
 
   useFocusEffect(
     useCallback(() => {
       let annule = false
+      // Relu à chaque retour sur l'écran : la personne a pu les activer dans les réglages.
+      void etatNotifications().then((e) => {
+        if (!annule) setNotifications(e)
+      })
       api
         .pourMoi()
         .then((c) => {
           if (annule) return
           setCal(c)
           setErreur(null)
-          if (!rituelPropose) {
-            rituelPropose = true
+          if (rituel.aProposer()) {
+            rituel.marquerPropose()
             ouvrirRituel(resumerRecu(c).aOuvrir)
           }
         })
@@ -154,6 +163,20 @@ export default function PourMoi() {
       <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
         {resume.ligne}
       </Texte>
+
+      {notifications &&
+      ['a_demander', 'bloque'].includes(notifications) &&
+      !carteNotificationsMasquee ? (
+        <CarteNotifications
+          prenom={prenom}
+          bloque={notifications === 'bloque'}
+          onActiver={async () => setNotifications(await demanderNotifications())}
+          onPlusTard={() => {
+            carteNotificationsMasquee = true
+            setNotifications(null)
+          }}
+        />
+      ) : null}
 
       <View style={styles.periodes} accessibilityRole="radiogroup" accessibilityLabel="Période">
         {periodes.map((p) => (
@@ -228,6 +251,47 @@ export default function PourMoi() {
         ) : null}
       </Feuille>
     </Ecran>
+  )
+}
+
+/** Rappel discret : sans notification, on rate le moment où un mot s'ouvre. */
+function CarteNotifications({
+  prenom,
+  bloque,
+  onActiver,
+  onPlusTard,
+}: {
+  prenom: string
+  bloque: boolean
+  onActiver: () => Promise<void>
+  onPlusTard: () => void
+}) {
+  return (
+    <View style={styles.encartNotifications}>
+      <View style={styles.encartLigne}>
+        <BoutonRond Icone={Cloche} fond={couleurs.decor.soleil} />
+        <View style={styles.flex}>
+          <Texte variante="labelM">Être prévenu quand un mot t’attend</Texte>
+          <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
+            {bloque
+              ? 'Active les notifications de Billets doux dans les réglages du téléphone.'
+              : `Une notification quand un mot de ${prenom} s’ouvre, sans rien dévoiler.`}
+          </Texte>
+        </View>
+      </View>
+      <View style={styles.encartBoutons}>
+        <View style={styles.flex}>
+          <Bouton libelle="Plus tard" variante="secondaire" pleineLargeur onPress={onPlusTard} />
+        </View>
+        <View style={styles.flex}>
+          <Bouton
+            libelle={bloque ? 'Réglages' : 'Activer'}
+            pleineLargeur
+            onPress={() => void onActiver()}
+          />
+        </View>
+      </View>
+    </View>
   )
 }
 
@@ -335,6 +399,21 @@ const styles = StyleSheet.create({
   },
   presse: {
     opacity: 0.8,
+  },
+  encartNotifications: {
+    gap: 14,
+    padding: 14,
+    borderRadius: rayons.carte,
+    backgroundColor: couleurs.fond.papierOmbre,
+  },
+  encartLigne: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  encartBoutons: {
+    flexDirection: 'row',
+    gap: 10,
   },
   tete: {
     flexDirection: 'row',

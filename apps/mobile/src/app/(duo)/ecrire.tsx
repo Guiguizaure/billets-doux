@@ -4,8 +4,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { ActivityIndicator, StyleSheet, TextInput, View } from 'react-native'
 
 import Apercu from '@/assets/icons/Apercu.svg'
+import Boite from '@/assets/icons/Boite.svg'
 import Calendrier from '@/assets/icons/Calendrier.svg'
+import Corbeille from '@/assets/icons/Corbeille.svg'
 import Photo from '@/assets/icons/Photo.svg'
+import Valider from '@/assets/icons/Valider.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
 import BordureParAvion from '@/assets/illustrations/bordure-par-avion.svg'
 import { Alerte } from '@/components/Alerte'
@@ -24,8 +27,8 @@ import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
 import { boiteAuxLettres } from '@/lib/boiteAuxLettres'
 import { api } from '@/lib/client'
-import { choisirSourcePhoto } from '@/lib/dialogue'
 import { messageErreur } from '@/lib/formulaires'
+import { useSourcePhoto } from '@/lib/sourcePhoto'
 import { choisirPhoto, PermissionRefusee } from '@/lib/photo'
 import { televerser } from '@/lib/televersement'
 import { TYPES_DE_MOT } from '@/lib/typesDeMot'
@@ -127,6 +130,7 @@ function Editeur({
   const { champs, modifier } = brouillon
   const [apercu, setApercu] = useState(false)
   const confirmer = useConfirmer()
+  const choisirSourcePhoto = useSourcePhoto()
   const [envoiPhoto, setEnvoiPhoto] = useState<{ uri: string; progression: number } | null>(null)
   const [erreurMedia, setErreurMedia] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -230,14 +234,19 @@ function Editeur({
       }
       actions={
         <>
+          {/* Même poids pour les deux choix. Côte à côte, chaque bouton n'aurait que ~79 dp
+              pour son libellé à 360 dp (~160 dp nécessaires) : empilés, Principal au-dessus. */}
           <Bouton
             libelle={initial.programmation ? 'Changer quand l’ouvrir' : 'Choisir quand l’ouvrir'}
             Icone={Calendrier}
             pleineLargeur
             onPress={() => void choisirQuand()}
           />
-          <LienTexte
+          <Bouton
             libelle={initial.programmation ? 'Terminé' : 'Garder dans la réserve'}
+            Icone={initial.programmation ? Valider : Boite}
+            variante="secondaire"
+            pleineLargeur
             onPress={() => void ranger()}
           />
         </>
@@ -362,8 +371,11 @@ function Editeur({
           ) : null}
           {message ? <Alerte message={message} /> : null}
           {brouillon.id ? (
-            <LienTexte
+            <Bouton
               libelle={initial.programmation ? 'Supprimer ce mot' : 'Supprimer ce brouillon'}
+              Icone={Corbeille}
+              variante="discret"
+              pleineLargeur
               onPress={() => void supprimer()}
             />
           ) : null}

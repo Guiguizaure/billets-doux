@@ -1,8 +1,15 @@
-import { Connexion, Inscription, MiseAJourCompte } from '@billets-doux/shared'
+import {
+  Appareil,
+  Connexion,
+  Inscription,
+  MiseAJourCompte,
+  RetraitAppareil,
+} from '@billets-doux/shared'
 import type { Endpoint } from 'payload'
 
 import { exigerUtilisateur, json, lireCorps, origine, route } from '@/lib/http'
 import { connecter, inscrire, mettreAJour, rafraichir, vueMoi } from '@/services/comptes'
+import { enregistrerAppareil, retirerAppareil } from '@/services/notifications'
 
 export const comptesEndpoints: Endpoint[] = [
   {
@@ -41,6 +48,25 @@ export const comptesEndpoints: Endpoint[] = [
       const userId = exigerUtilisateur(req)
       await mettreAJour(req, userId, await lireCorps(req, MiseAJourCompte))
       return json(req, 200, await vueMoi(req, userId, origine(req)))
+    }),
+  },
+  {
+    path: '/comptes/appareils',
+    method: 'post',
+    handler: route(async (req) => {
+      const userId = exigerUtilisateur(req)
+      await enregistrerAppareil(req.payload, userId, await lireCorps(req, Appareil))
+      return json(req, 200, { ok: true })
+    }),
+  },
+  {
+    path: '/comptes/appareils/retrait',
+    method: 'post',
+    handler: route(async (req) => {
+      const userId = exigerUtilisateur(req)
+      const { jeton } = await lireCorps(req, RetraitAppareil)
+      await retirerAppareil(req.payload, userId, jeton)
+      return json(req, 200, { ok: true })
     }),
   },
 ]

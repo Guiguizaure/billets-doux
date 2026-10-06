@@ -107,6 +107,29 @@ export const Users: CollectionConfig = {
       ],
     },
     {
+      // Un jeton Expo Push par appareil ; retiré à la déconnexion ou quand Expo le déclare invalide.
+      name: 'appareils',
+      label: 'Appareils (notifications)',
+      type: 'array',
+      admin: { readOnly: true },
+      fields: [
+        { name: 'jeton', type: 'text', required: true },
+        {
+          name: 'plateforme',
+          type: 'select',
+          required: true,
+          options: ['android', 'ios'],
+        },
+        { name: 'vuLe', label: 'Vu le', type: 'date' },
+      ],
+    },
+    {
+      name: 'dernierRappelLe',
+      label: 'Dernier rappel doux le',
+      type: 'date',
+      admin: { readOnly: true },
+    },
+    {
       name: 'essaisCode',
       label: 'Essais de code d’invitation',
       type: 'group',

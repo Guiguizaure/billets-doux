@@ -128,21 +128,20 @@ export function EnveloppeRituel({
         </Animated.View>
         <Animated.View style={[styles.anneau, styleAnneau]}>
           <Svg width={ANNEAU} height={ANNEAU}>
+            {/* Fond d'anneau couleur « ligne » : on voit ce qu'il reste à tenir. */}
             <Circle
               cx={ANNEAU / 2}
               cy={ANNEAU / 2}
               r={RAYON_ANNEAU}
-              stroke={couleurs.fond.carte}
-              strokeOpacity={0.55}
-              strokeWidth={2}
-              strokeDasharray="4 5"
+              stroke={couleurs.trait.ligne}
+              strokeWidth={3.5}
               fill="none"
             />
             <AnimatedCircle
               cx={ANNEAU / 2}
               cy={ANNEAU / 2}
               r={RAYON_ANNEAU}
-              stroke={couleurs.fond.carte}
+              stroke={couleurs.action.cachet}
               strokeWidth={3.5}
               strokeLinecap="round"
               strokeDasharray={`${CIRCONFERENCE} ${CIRCONFERENCE}`}

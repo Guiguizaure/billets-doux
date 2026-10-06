@@ -18,6 +18,7 @@ import {
   VueMedia,
   VueMotAuteur,
 } from '../schemas/mots'
+import { type Appareil } from '../schemas/notifications'
 import { CalendrierAuteur, MotProgramme, type Programmation } from '../schemas/programmation'
 import { CalendrierDestinataire, MotOuvert, type Repondre, VueReponse } from '../schemas/reception'
 import type { Reaction, Rythme } from '../enums'
@@ -102,6 +103,12 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
       appel(VueReponse, 'PUT', `/api/mots/${id}/reaction`, { reaction }),
     repondre: (id: string, reponse: Repondre) =>
       appel(VueReponse, 'POST', `/api/mots/${id}/reponse`, reponse),
+    /** Cet appareil recevra les notifications du compte (un jeton Expo Push par appareil). */
+    enregistrerAppareil: (appareil: Appareil) =>
+      appel(z.object({ ok: z.literal(true) }), 'POST', '/api/comptes/appareils', appareil),
+    /** À la déconnexion : cet appareil ne reçoit plus rien. */
+    retirerAppareil: (jeton: string) =>
+      appel(z.object({ ok: z.literal(true) }), 'POST', '/api/comptes/appareils/retrait', { jeton }),
     /** Ferme la session côté serveur (route d'authentification de Payload). */
     deconnexion: () => appel(z.unknown(), 'POST', '/api/users/logout'),
   }

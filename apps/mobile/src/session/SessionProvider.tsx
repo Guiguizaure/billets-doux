@@ -17,6 +17,7 @@ import {
 } from 'react'
 
 import { api, jeton } from '@/lib/client'
+import { retirerCetAppareil } from '@/lib/notifications'
 import { stockageJeton } from '@/lib/stockage'
 
 type Etat =
@@ -100,6 +101,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     [ouvrir],
   )
   const deconnecter = useCallback(async () => {
+    // Avant de fermer la session : cet appareil ne reçoit plus les notifications du compte.
+    await retirerCetAppareil()
     await api.deconnexion().catch(() => undefined)
     await oublier()
   }, [oublier])

@@ -10,3 +10,6 @@ if (!process.env.DATABASE_URI.includes('/billets-doux-test')) {
 
 // Médias : bucket dédié aux tests (créé par les tests eux-mêmes, cf. preparerBucket).
 process.env.S3_BUCKET = 'billets-doux-medias-test'
+
+// Les tâches planifiées ne tournent pas pendant les tests : on les appelle directement.
+process.env.TACHES_DESACTIVEES = '1'
