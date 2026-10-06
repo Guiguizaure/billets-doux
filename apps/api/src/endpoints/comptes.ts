@@ -10,6 +10,7 @@ import type { Endpoint } from 'payload'
 
 import { exigerUtilisateur, json, lireCorps, origine, route } from '@/lib/http'
 import { connecter, inscrire, mettreAJour, rafraichir, vueMoi } from '@/services/comptes'
+import { connexionDemo } from '@/services/demo'
 import { supprimerCompte } from '@/services/duree'
 import { enregistrerAppareil, retirerAppareil } from '@/services/notifications'
 
@@ -27,6 +28,11 @@ export const comptesEndpoints: Endpoint[] = [
     handler: route(async (req) =>
       json(req, 200, await connecter(req.payload, await lireCorps(req, Connexion))),
     ),
+  },
+  {
+    path: '/comptes/demo',
+    method: 'post',
+    handler: route(async (req) => json(req, 200, await connexionDemo(req.payload))),
   },
   {
     path: '/comptes/rafraichir',

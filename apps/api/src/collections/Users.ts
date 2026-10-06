@@ -124,6 +124,14 @@ export const Users: CollectionConfig = {
       ],
     },
     {
+      // Duo de démo (portfolio) : rien d'irréversible, remis à zéro chaque nuit.
+      name: 'demo',
+      label: 'Compte de démo',
+      type: 'select',
+      options: ['visiteur', 'partenaire'],
+      admin: { readOnly: true },
+    },
+    {
       name: 'dernierRappelLe',
       label: 'Dernier rappel doux le',
       type: 'date',

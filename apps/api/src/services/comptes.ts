@@ -113,6 +113,7 @@ export async function vueMoi(req: PayloadRequest, userId: string, origine: strin
       fuseauHoraire: user.fuseauHoraire,
       heureDecouverte: user.heureDecouverte,
       heureConfirmee: Boolean(user.heureConfirmee),
+      demo: Boolean(user.demo),
       reglages: {
         rappelDoux: user.reglages?.rappelDoux !== false,
         indicesVisibles: user.reglages?.indicesVisibles !== false,
@@ -130,7 +131,9 @@ export async function mettreAJour(req: PayloadRequest, userId: string, donnees: 
   }
   if (donnees.fuseauHoraire) {
     if (!fuseauValide(donnees.fuseauHoraire)) throw new ErreurMetier(400, 'Fuseau horaire inconnu.')
-    data.fuseauHoraire = donnees.fuseauHoraire
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
+    // Le duo de démo garde son fuseau, d'où que vienne le visiteur.
+    if (!user.demo) data.fuseauHoraire = donnees.fuseauHoraire
   }
   if (donnees.reglages) {
     const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })

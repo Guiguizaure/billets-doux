@@ -80,6 +80,8 @@ export function creerClient({ baseUrl, jeton, fetchImpl = fetch }: Options) {
     inscription: (donnees: Inscription) =>
       appel(Session, 'POST', '/api/comptes/inscription', donnees),
     connexion: (donnees: Connexion) => appel(Session, 'POST', '/api/comptes/connexion', donnees),
+    /** Le duo de démo (version web) : connexion sans mot de passe au compte du visiteur. */
+    connexionDemo: () => appel(Session, 'POST', '/api/comptes/demo'),
     rafraichir: () => appel(Session, 'POST', '/api/comptes/rafraichir'),
     moi: () => appel(Moi, 'GET', '/api/comptes/moi'),
     mettreAJour: (donnees: MiseAJourCompte) => appel(Moi, 'PATCH', '/api/comptes/moi', donnees),

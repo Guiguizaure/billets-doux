@@ -16,6 +16,7 @@ import { idDe } from '@/lib/ids'
 import { deposerFichier, lireFichier, supprimerPrefixe, urlTelechargement } from '@/lib/stockage'
 
 import { vuePause } from './comptes'
+import { exigerHorsDemo } from './demo'
 import { duoCourant } from './duoCourant'
 import { notify } from './notifications'
 import { jokersRestants } from './reception'
@@ -147,6 +148,7 @@ export async function fermer(
 }
 
 export async function fermerDuo(req: PayloadRequest, userId: string) {
+  await exigerHorsDemo(req.payload, userId, 'Le duo de démo ne peut pas être fermé.')
   const { duo } = await duoCourant(req, userId)
   await fermer(req.payload, duo, userId)
 }
@@ -400,6 +402,7 @@ ${await section('Jamais envoyés', jamais, true)}
  */
 export async function supprimerCompte(req: PayloadRequest, userId: string, motDePasse: string) {
   const { payload } = req
+  await exigerHorsDemo(payload, userId, 'Le compte de démo ne peut pas être supprimé.')
   const user = await payload.findByID({ collection: 'users', id: userId, depth: 1 })
   try {
     await payload.login({ collection: 'users', data: { email: user.email, password: motDePasse } })

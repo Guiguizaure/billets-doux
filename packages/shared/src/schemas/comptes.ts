@@ -53,6 +53,8 @@ export const Moi = z.object({
     heureDecouverte: z.string(),
     /** L'heure a été confirmée (écran 1.3) : on ne le remontre plus. */
     heureConfirmee: z.boolean(),
+    /** Compte du duo de démo (portfolio) : actions irréversibles désactivées. */
+    demo: z.boolean().default(false),
     reglages: z
       .object({ rappelDoux: z.boolean(), indicesVisibles: z.boolean() })
       .default({ rappelDoux: true, indicesVisibles: true }),
