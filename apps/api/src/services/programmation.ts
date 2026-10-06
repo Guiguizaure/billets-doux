@@ -131,7 +131,12 @@ export async function calendrier(
     req.payload.find({
       collection: 'mots',
       where: {
-        and: [{ auteur: { equals: userId } }, { statut: { in: ['programme', 'ouvert'] } }],
+        and: [
+          { auteur: { equals: userId } },
+          // Seulement le duo en cours : un ancien duo vit dans les souvenirs.
+          { duo: { equals: duo.id } },
+          { statut: { in: ['programme', 'ouvert'] } },
+        ],
       },
       sort: 'unlockAt',
       depth: 1,

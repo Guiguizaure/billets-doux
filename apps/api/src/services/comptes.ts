@@ -7,6 +7,7 @@ import {
   type Session,
   type VueDuo,
 } from '@billets-doux/shared'
+import type { Duo, User } from '@billets-doux/shared/payload-types'
 import type { Payload, PayloadRequest } from 'payload'
 import { AuthenticationError, LockedAuth, refreshOperation, ValidationError } from 'payload'
 
@@ -85,12 +86,17 @@ export async function vueMoi(req: PayloadRequest, userId: string, origine: strin
   if (duoId) {
     const d = await payload.findByID({ collection: 'duos', id: duoId, depth: 0, req })
     const partenaireId = d.membres.map(idDe).find((id) => id && id !== userId)
+    // L'autre a pu supprimer son compte (le duo est alors fermé).
     const partenaire = partenaireId
-      ? await payload.findByID({ collection: 'users', id: partenaireId, depth: 0, req })
+      ? await payload
+          .findByID({ collection: 'users', id: partenaireId, depth: 0, req })
+          .catch(() => null)
       : null
     duo = {
       id: d.id,
       statut: d.statut,
+      retrouvailles: d.retrouvailles ?? null,
+      pause: await vuePause(req, d, userId),
       invitation:
         d.statut === 'invitation' && idDe(d.createur) === userId
           ? { code: d.code, expireLe: d.codeExpireLe, lien: `${origine}/rejoindre/${d.code}` }
@@ -107,18 +113,45 @@ export async function vueMoi(req: PayloadRequest, userId: string, origine: strin
       fuseauHoraire: user.fuseauHoraire,
       heureDecouverte: user.heureDecouverte,
       heureConfirmee: Boolean(user.heureConfirmee),
+      reglages: {
+        rappelDoux: user.reglages?.rappelDoux !== false,
+        indicesVisibles: user.reglages?.indicesVisibles !== false,
+      },
     },
     duo,
   }
 }
 
 export async function mettreAJour(req: PayloadRequest, userId: string, donnees: MiseAJourCompte) {
+  const data: Partial<User> = {}
   if (donnees.heureDecouverte) {
-    await req.payload.update({
-      collection: 'users',
-      id: userId,
-      data: { heureDecouverte: donnees.heureDecouverte, heureConfirmee: true },
-      req,
-    })
+    data.heureDecouverte = donnees.heureDecouverte
+    data.heureConfirmee = true
+  }
+  if (donnees.fuseauHoraire) {
+    if (!fuseauValide(donnees.fuseauHoraire)) throw new ErreurMetier(400, 'Fuseau horaire inconnu.')
+    data.fuseauHoraire = donnees.fuseauHoraire
+  }
+  if (donnees.reglages) {
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
+    data.reglages = { ...user.reglages, ...donnees.reglages }
+  }
+  // Le hook de users recalcule les ouvertures si l'heure ou le fuseau change.
+  if (Object.keys(data).length > 0) {
+    await req.payload.update({ collection: 'users', id: userId, data, req })
+  }
+}
+
+/** Qui a mis le duo en pause, et depuis quand (null s'il n'est pas en pause). */
+export async function vuePause(req: PayloadRequest, duo: Duo, userId: string) {
+  const parId = idDe(duo.pausePar)
+  if (duo.statut !== 'pause' || !parId) return null
+  const par = await req.payload
+    .findByID({ collection: 'users', id: parId, depth: 0, req })
+    .catch(() => null)
+  return {
+    parMoi: parId === userId,
+    prenom: par?.prenom ?? '',
+    depuis: duo.pauseDepuis ?? '',
   }
 }

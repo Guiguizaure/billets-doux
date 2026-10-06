@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutBucketCorsCommand,
   PutObjectCommand,
   S3Client,
@@ -123,6 +124,54 @@ export async function decrire(cle: string) {
 export async function supprimer(cle: string) {
   const c = config()
   await client(c.endpoint).send(new DeleteObjectCommand({ Bucket: c.bucket, Key: cle }))
+}
+
+/** Le contenu d'un fichier (pour l'export des souvenirs). */
+export async function lireFichier(cle: string) {
+  const c = config()
+  const reponse = await client(c.endpoint).send(
+    new GetObjectCommand({ Bucket: c.bucket, Key: cle }),
+  )
+  if (!reponse.Body) throw new Error(`Fichier vide : ${cle}`)
+  return reponse.Body.transformToByteArray()
+}
+
+/** Dépose un fichier fabriqué par l'API (archive d'export). */
+export async function deposerFichier(cle: string, octets: Uint8Array, mime: string) {
+  const c = config()
+  await client(c.endpoint).send(
+    new PutObjectCommand({ Bucket: c.bucket, Key: cle, Body: octets, ContentType: mime }),
+  )
+}
+
+/** URL signée qui télécharge le fichier sous `nomFichier` (au lieu de l'afficher). */
+export async function urlTelechargement(options: {
+  cle: string
+  nomFichier: string
+  hote?: string | null
+}) {
+  const { bucket } = config()
+  const url = await getSignedUrl(
+    client(endpointPublic(options.hote)),
+    new GetObjectCommand({
+      Bucket: bucket,
+      Key: options.cle,
+      ResponseContentDisposition: `attachment; filename="${options.nomFichier}"`,
+    }),
+    { expiresIn: DUREE_LECTURE_S * 2 },
+  )
+  return { url, expire: new Date(Date.now() + DUREE_LECTURE_S * 2000).toISOString() }
+}
+
+/** Supprime tous les fichiers sous un préfixe (« exports/<compte>/ »). */
+export async function supprimerPrefixe(prefixe: string) {
+  const c = config()
+  const { Contents } = await client(c.endpoint).send(
+    new ListObjectsV2Command({ Bucket: c.bucket, Prefix: prefixe }),
+  )
+  for (const objet of Contents ?? []) {
+    if (objet.Key) await supprimer(objet.Key)
+  }
 }
 
 /** Crée le bucket s'il manque et autorise les envois depuis la version web (CORS). */

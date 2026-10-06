@@ -4,11 +4,13 @@ import {
   Inscription,
   MiseAJourCompte,
   RetraitAppareil,
+  SuppressionCompte,
 } from '@billets-doux/shared'
 import type { Endpoint } from 'payload'
 
 import { exigerUtilisateur, json, lireCorps, origine, route } from '@/lib/http'
 import { connecter, inscrire, mettreAJour, rafraichir, vueMoi } from '@/services/comptes'
+import { supprimerCompte } from '@/services/duree'
 import { enregistrerAppareil, retirerAppareil } from '@/services/notifications'
 
 export const comptesEndpoints: Endpoint[] = [
@@ -66,6 +68,17 @@ export const comptesEndpoints: Endpoint[] = [
       const userId = exigerUtilisateur(req)
       const { jeton } = await lireCorps(req, RetraitAppareil)
       await retirerAppareil(req.payload, userId, jeton)
+      return json(req, 200, { ok: true })
+    }),
+  },
+  {
+    // Suppression du compte : le mot de passe est redemandé.
+    path: '/comptes/suppression',
+    method: 'post',
+    handler: route(async (req) => {
+      const userId = exigerUtilisateur(req)
+      const { motDePasse } = await lireCorps(req, SuppressionCompte)
+      await supprimerCompte(req, userId, motDePasse)
       return json(req, 200, { ok: true })
     }),
   },

@@ -36,7 +36,7 @@ export async function calendrierDestinataire(
   userId: string,
   maintenant = new Date(),
 ): Promise<CalendrierDestinataire> {
-  const { partenaireId } = await duoCourant(req, userId)
+  const { duo, partenaireId } = await duoCourant(req, userId)
   const [moi, auteur] = await Promise.all([
     req.payload.findByID({ collection: 'users', id: userId, depth: 0, req }),
     req.payload.findByID({ collection: 'users', id: partenaireId, depth: 0, req }),
@@ -44,7 +44,12 @@ export async function calendrierDestinataire(
   const { docs } = await req.payload.find({
     collection: 'mots',
     where: {
-      and: [{ destinataire: { equals: userId } }, { statut: { in: ['programme', 'ouvert'] } }],
+      and: [
+        { destinataire: { equals: userId } },
+        // Seulement le duo en cours : un ancien duo vit dans les souvenirs.
+        { duo: { equals: duo.id } },
+        { statut: { in: ['programme', 'ouvert'] } },
+      ],
     },
     sort: 'unlockAt',
     depth: 0,
@@ -101,7 +106,7 @@ export async function calendrierDestinataire(
 }
 
 /** Jokers encore disponibles ce mois-ci (renouvelés le 1er, dans le fuseau du destinataire). */
-async function jokersRestants(req: PayloadRequest, moi: User, maintenant: Date) {
+export async function jokersRestants(req: PayloadRequest, moi: User, maintenant: Date) {
   const mois = jourLocal(maintenant, moi.fuseauHoraire).slice(0, 7)
   const { docs } = await req.payload.find({
     collection: 'mots',
@@ -178,13 +183,25 @@ export async function lireMot(
     .catch(() => null)
   const auteurId = mot ? idDe(mot.auteur) : null
   const destinataireId = mot ? idDe(mot.destinataire) : null
-  if (!mot || mot.statut !== 'ouvert' || (userId !== auteurId && userId !== destinataireId)) {
-    throw new ErreurMetier(404, INTROUVABLE)
-  }
-  const [auteur, destinataire, reponse] = await Promise.all([
-    req.payload.findByID({ collection: 'users', id: auteurId ?? '', depth: 0, req }),
-    req.payload.findByID({ collection: 'users', id: destinataireId ?? '', depth: 0, req }),
+  const lisible =
+    mot &&
+    ((mot.statut === 'ouvert' && (userId === auteurId || userId === destinataireId)) ||
+      // Jamais envoyé (duo fermé) : son auteur seul le relit.
+      (mot.statut === 'non_envoye' && userId === auteurId))
+  if (!mot || !lisible) throw new ErreurMetier(404, INTROUVABLE)
+  // L'autre a pu supprimer son compte : on garde le mot, avec un prénom de repli.
+  const prenomDe = async (id: string | null) =>
+    id
+      ? ((await req.payload.findByID({ collection: 'users', id, depth: 0, req }).catch(() => null))
+          ?.prenom ?? 'ta personne')
+      : 'ta personne'
+  const [auteur, destinataire, reponse, peutRepondre] = await Promise.all([
+    prenomDe(auteurId),
+    prenomDe(destinataireId),
     reponseDe(req, mot.id),
+    userId === destinataireId && mot.statut === 'ouvert'
+      ? duoEnCoursDe(req, userId, idDe(mot.duo))
+      : Promise.resolve(false),
   ])
   const media = (valeur: Mot['photo']) =>
     valeur && typeof valeur === 'object' ? vueMedia(valeur as Media) : null
@@ -197,10 +214,12 @@ export async function lireMot(
     vocal: media(mot.vocal),
     jour: mot.mode === 'ouvre_quand' ? null : (mot.jourOuverture ?? null),
     titreOuvreQuand: mot.titreOuvreQuand ?? null,
-    ouvertLe: mot.openedAt ?? new Date().toISOString(),
+    ouvertLe: mot.openedAt ?? null,
     ouvertAvecJoker: Boolean(mot.ouvertAvecJoker),
-    auteur: { prenom: auteur.prenom },
-    destinataire: { prenom: destinataire.prenom },
+    jamaisEnvoye: mot.statut === 'non_envoye',
+    peutRepondre,
+    auteur: { prenom: auteur },
+    destinataire: { prenom: destinataire },
     vuParAuteur: userId === auteurId,
     reponse: reponse ? vueReponse(reponse) : null,
   }
@@ -305,7 +324,18 @@ async function motRecu(req: PayloadRequest, userId: string, motId: string) {
 async function motOuvertRecu(req: PayloadRequest, userId: string, motId: string) {
   const mot = await motRecu(req, userId, motId)
   if (mot.statut !== 'ouvert') throw new ErreurMetier(409, 'Ouvre d’abord ce mot.')
+  if (!(await duoEnCoursDe(req, userId, idDe(mot.duo)))) {
+    throw new ErreurMetier(409, 'Ce duo est fermé : ce mot se relit, on n’y répond plus.')
+  }
   return mot
+}
+
+/** Vrai si `duoId` est le duo en cours (actif ou en pause) de l'utilisateur. */
+async function duoEnCoursDe(req: PayloadRequest, userId: string, duoId: string | null) {
+  if (!duoId) return false
+  const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 1, req })
+  const duo = typeof user.duo === 'object' ? user.duo : null
+  return Boolean(duo && duo.id === duoId && (duo.statut === 'actif' || duo.statut === 'pause'))
 }
 
 async function reponseDe(req: PayloadRequest, motId: string) {
