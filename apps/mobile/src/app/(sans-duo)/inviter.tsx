@@ -159,6 +159,7 @@ export default function Inviter() {
         </Texte>
         <View style={styles.liens}>
           <LienTexte libelle="J’ai reçu un code" onPress={() => router.push('/rejoindre')} />
+          <LienTexte libelle="Mes souvenirs" onPress={() => router.push('/mes-souvenirs')} />
           <LienTexte libelle="Se déconnecter" onPress={() => void deconnecter()} />
         </View>
       </View>

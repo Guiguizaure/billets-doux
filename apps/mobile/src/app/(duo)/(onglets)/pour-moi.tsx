@@ -11,6 +11,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
 
+import Calendrier from '@/assets/icons/Calendrier.svg'
 import Cloche from '@/assets/icons/Cloche.svg'
 import Joker from '@/assets/icons/Joker.svg'
 import Lune from '@/assets/icons/Lune.svg'
@@ -20,6 +21,7 @@ import Surprise from '@/assets/icons/Surprise.svg'
 import EnveloppeCachet from '@/assets/illustrations/enveloppe-cachet.svg'
 import TimbreLune from '@/assets/illustrations/timbre-lune.svg'
 import { Alerte } from '@/components/Alerte'
+import { BandeauPause } from '@/components/BandeauPause'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { Case, type EtatCase } from '@/components/Case'
@@ -71,7 +73,7 @@ const ouvrirRituel = (ids: string[], joker = false) => {
 
 /** Écran 2.1 Mon calendrier (onglet « Pour moi »). */
 export default function PourMoi() {
-  const { moi } = useSession()
+  const { moi, actualiser } = useSession()
   const fuseau = moi?.utilisateur.fuseauHoraire ?? 'Europe/Paris'
   const [cal, setCal] = useState<CalendrierDestinataire | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
@@ -83,6 +85,8 @@ export default function PourMoi() {
   useFocusEffect(
     useCallback(() => {
       let annule = false
+      // L'autre a pu mettre le duo en pause ou le fermer.
+      void actualiser()
       // Relu à chaque retour sur l'écran : la personne a pu les activer dans les réglages.
       void etatNotifications().then((e) => {
         if (!annule) setNotifications(e)
@@ -104,7 +108,7 @@ export default function PourMoi() {
       return () => {
         annule = true
       }
-    }, []),
+    }, [actualiser]),
   )
 
   if (!cal) {
@@ -191,6 +195,21 @@ export default function PourMoi() {
 
       {erreur ? <Alerte message={erreur} /> : null}
 
+      <BandeauPause />
+
+      {moi?.duo?.retrouvailles ? (
+        <Pressable
+          onPress={() => router.push('/retrouvailles')}
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.surprises, pressed && styles.presse]}
+        >
+          <Calendrier width={18} height={18} color={couleurs.texte.encreDouce} />
+          <Texte variante="corpsS" couleur={couleurs.texte.encreDouce} style={styles.flex}>
+            {ligneRetrouvailles(moi.duo.retrouvailles, cal.aujourdhui)}
+          </Texte>
+        </Pressable>
+      ) : null}
+
       {/* Le pendant de la ligne de l'auteur : une surprise arrive, jamais le jour. */}
       {surprises ? (
         <View style={styles.surprises}>
@@ -252,6 +271,14 @@ export default function PourMoi() {
       </Feuille>
     </Ecran>
   )
+}
+
+/** « 16 jours avant de se revoir · samedi 31 octobre ». */
+function ligneRetrouvailles(jour: string, aujourdhui: string) {
+  const reste = Math.max(0, ecartEnJours(aujourdhui, jour))
+  return reste === 0
+    ? 'C’est le jour des retrouvailles'
+    : `${reste} jour${reste > 1 ? 's' : ''} avant de se revoir · ${libellesJour(jour).long}`
 }
 
 /** Rappel discret : sans notification, on rate le moment où un mot s'ouvre. */

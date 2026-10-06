@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { ChoixProvider } from '@/components/Choix'
 import { DialogueProvider } from '@/components/Dialogue'
+import { fuseauDuTelephone } from '@/lib/fuseau'
 import { enregistrerCetAppareil, useOuvertureDesNotifications } from '@/lib/notifications'
 import { SessionProvider, useSession } from '@/session/SessionProvider'
 import { fichiersPolices } from '@/theme/polices'
@@ -42,7 +43,8 @@ export default function RootLayout() {
 }
 
 function Navigation() {
-  const { phase } = useSession()
+  const { phase, moi, api, appliquer } = useSession()
+  const fuseauCompte = moi?.utilisateur.fuseauHoraire
 
   // L'écran de démarrage reste visible tant qu'on ne sait pas où envoyer la personne.
   useEffect(() => {
@@ -55,6 +57,18 @@ function Navigation() {
     if (phase === 'duo') void enregistrerCetAppareil()
   }, [phase])
   useOuvertureDesNotifications(phase === 'duo')
+
+  // Voyage, déménagement : le compte suit le fuseau du téléphone, pour que les mots
+  // s'ouvrent toujours à l'heure choisie, heure locale (l'API recalcule les ouvertures).
+  useEffect(() => {
+    if (!fuseauCompte || (phase !== 'duo' && phase !== 'sansDuo')) return
+    const fuseau = fuseauDuTelephone()
+    if (fuseau === fuseauCompte) return
+    api
+      .mettreAJour({ fuseauHoraire: fuseau })
+      .then(appliquer)
+      .catch(() => undefined)
+  }, [phase, fuseauCompte, api, appliquer])
 
   return (
     <Stack screenOptions={optionsPile}>
