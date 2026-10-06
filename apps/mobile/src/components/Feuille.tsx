@@ -1,13 +1,27 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { KeyboardAvoidingView, Modal, Pressable, StyleSheet, View } from 'react-native'
-import Animated, { SlideInDown } from 'react-native-reanimated'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { couleurs } from '@/theme/tokens'
 
+/** Départ de la montée de la feuille, sous le bord de l'écran. */
+const DEPART = 480
+
 /**
- * Feuille du bas sur un voile (Figma 2.2 et 2.7). Toucher le voile ou le bouton retour
- * d'Android la ferme. Sa montée suit le réglage « réduire les animations » du système.
+ * Feuille du bas sur un voile (Figma 2.2 et 2.7). Toucher le voile, le bouton retour
+ * d'Android ou Échap sur le web la ferme.
+ *
+ * Calques explicites : le voile dessous (zIndex 0), la feuille dessus (zIndex 1).
+ * La montée est un style animé ordinaire, pas une animation d'entrée (`entering`) :
+ * dans un Modal sur Android, celle-ci semble laisser la zone touchable de la feuille à
+ * sa position de départ, hors de l'écran (aucun bouton ne réagissait en 2.2).
  */
 export function Feuille({
   visible,
@@ -19,6 +33,23 @@ export function Feuille({
   children: ReactNode
 }) {
   const insets = useSafeAreaInsets()
+  const reduit = useReducedMotion()
+  const decalage = useSharedValue(DEPART)
+
+  useEffect(() => {
+    if (!visible) return
+    if (reduit) {
+      decalage.set(0)
+      return
+    }
+    decalage.set(DEPART)
+    decalage.set(withTiming(0, { duration: 260, easing: Easing.out(Easing.cubic) }))
+  }, [visible, reduit, decalage])
+
+  const styleMontee = useAnimatedStyle(() => ({
+    transform: [{ translateY: decalage.get() }],
+  }))
+
   return (
     <Modal
       visible={visible}
@@ -34,11 +65,12 @@ export function Feuille({
           onPress={onFermer}
           accessibilityRole="button"
           accessibilityLabel="Fermer"
+          // Au clavier (web), le focus va d'abord au contenu de la feuille ; Échap ferme.
+          focusable={false}
         />
         <Animated.View
-          entering={SlideInDown.duration(260)}
           accessibilityViewIsModal
-          style={[styles.feuille, { paddingBottom: Math.max(insets.bottom, 12) + 16 }]}
+          style={[styles.feuille, styleMontee, { paddingBottom: Math.max(insets.bottom, 12) + 16 }]}
         >
           <View style={styles.poignee} />
           {children}
@@ -55,9 +87,11 @@ const styles = StyleSheet.create({
   },
   voile: {
     ...StyleSheet.absoluteFill,
+    zIndex: 0,
     backgroundColor: 'rgba(42, 35, 70, 0.45)',
   },
   feuille: {
+    zIndex: 1,
     width: '100%',
     maxWidth: 480,
     alignSelf: 'center',
