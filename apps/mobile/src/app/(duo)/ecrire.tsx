@@ -18,6 +18,7 @@ import Valider from '@/assets/icons/Valider.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
 import BordureParAvion from '@/assets/illustrations/bordure-par-avion.svg'
 import { Alerte } from '@/components/Alerte'
+import { BandeauInfo } from '@/components/BandeauInfo'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRondAction } from '@/components/BoutonRondAction'
 import { useConfirmer } from '@/components/Dialogue'
@@ -140,6 +141,8 @@ function Editeur({
   const choisirSourcePhoto = useSourcePhoto()
   const [envoiPhoto, setEnvoiPhoto] = useState<{ uri: string; progression: number } | null>(null)
   const [erreurMedia, setErreurMedia] = useState<string | null>(null)
+  // Photo choisie mais pas partie (réseau) : on la renvoie d'un toucher, sans la rechoisir.
+  const [photoEnEchec, setPhotoEnEchec] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
   // Retour de l'enregistreur (3.3) : le vocal enregistré est joint au mot.
@@ -155,26 +158,35 @@ function Editeur({
     revenir()
   }
 
+  const envoyerPhoto = async (uri: string) => {
+    setErreurMedia(null)
+    setPhotoEnEchec(null)
+    setEnvoiPhoto({ uri, progression: 0 })
+    try {
+      const media = await televerser({ nature: 'photo', uri }, (progression) =>
+        setEnvoiPhoto((e) => (e ? { ...e, progression } : e)),
+      )
+      modifier({ photo: media })
+    } catch {
+      setPhotoEnEchec(uri)
+    } finally {
+      setEnvoiPhoto(null)
+    }
+  }
+
   const ajouterPhoto = async () => {
     setErreurMedia(null)
     const source = await choisirSourcePhoto()
     if (!source) return
     try {
       const photo = await choisirPhoto(source)
-      if (!photo) return
-      setEnvoiPhoto({ uri: photo.uri, progression: 0 })
-      const media = await televerser({ nature: 'photo', uri: photo.uri }, (progression) =>
-        setEnvoiPhoto((e) => (e ? { ...e, progression } : e)),
-      )
-      modifier({ photo: media })
+      if (photo) await envoyerPhoto(photo.uri)
     } catch (e) {
       setErreurMedia(
         e instanceof PermissionRefusee
           ? 'Autorise l’appareil photo dans les réglages du téléphone.'
           : messageErreur(e),
       )
-    } finally {
-      setEnvoiPhoto(null)
     }
   }
 
@@ -407,6 +419,13 @@ function Editeur({
           </View>
 
           {erreurMedia ? <Alerte message={erreurMedia} /> : null}
+          {photoEnEchec ? (
+            <BandeauInfo
+              Icone={Photo}
+              message="La photo n’est pas partie."
+              action={{ libelle: 'Réessayer', onPress: () => void envoyerPhoto(photoEnEchec) }}
+            />
+          ) : null}
 
           <Champ
             libelle="Indice (visible avant l’ouverture)"

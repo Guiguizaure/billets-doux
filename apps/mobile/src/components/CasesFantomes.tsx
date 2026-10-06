@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import Animated, {
   cancelAnimation,
   useAnimatedStyle,
@@ -17,6 +17,7 @@ import { couleurs, rayons } from '@/theme/tokens'
  */
 export function CasesFantomes({ nombre = 9 }: { nombre?: number }) {
   const reduit = useReducedMotion()
+  const { fontScale } = useWindowDimensions()
   const opacite = useSharedValue(1)
   useEffect(() => {
     if (reduit) return
@@ -32,13 +33,16 @@ export function CasesFantomes({ nombre = 9 }: { nombre?: number }) {
       accessibilityRole="progressbar"
     >
       {Array.from({ length: nombre }, (_, i) => (
-        <View key={i} style={styles.case} />
+        <View key={i} style={[styles.case, fontScale > 1.3 && styles.large]} />
       ))}
     </Animated.View>
   )
 }
 
 const styles = StyleSheet.create({
+  large: {
+    width: 171,
+  },
   grille: {
     flexDirection: 'row',
     flexWrap: 'wrap',

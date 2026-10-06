@@ -18,6 +18,7 @@ import {
 
 import { api, jeton } from '@/lib/client'
 import { retirerCetAppareil } from '@/lib/notifications'
+import { sessionExpiree } from '@/lib/reseau'
 import { stockageJeton } from '@/lib/stockage'
 
 type Etat =
@@ -47,6 +48,8 @@ type Session = {
   /** Relit la vue « moi » (ex. : la personne invitée vient de rejoindre). */
   actualiser: () => Promise<void>
   reessayer: () => void
+  /** La session vient d'expirer : l'accueil et la connexion le disent. */
+  sessionExpiree: boolean
 }
 
 const Contexte = createContext<Session | null>(null)
@@ -66,7 +69,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [tentative])
 
+  const [expiree, setExpiree] = useState(false)
+
   const ouvrir = useCallback(async (session: JetonSession) => {
+    setExpiree(false)
     jeton.definir(session.jeton)
     await stockageJeton.ecrire(session.jeton)
     setEtat({ statut: 'connecte', moi: await api.moi() })
@@ -77,6 +83,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await stockageJeton.effacer()
     setEtat({ statut: 'visiteur' })
   }, [])
+
+  // Un appel refusé (jeton expiré ou révoqué) ferme la session, avec un message clair.
+  useEffect(
+    () =>
+      sessionExpiree.ecouter(() => {
+        if (!jeton.lire()) return
+        setExpiree(true)
+        void oublier()
+      }),
+    [oublier],
+  )
 
   const actualiser = useCallback(async () => {
     try {
@@ -125,6 +142,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       appliquer,
       actualiser,
       reessayer,
+      sessionExpiree: expiree,
     }
   }, [
     etat,
@@ -136,6 +154,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     appliquer,
     actualiser,
     reessayer,
+    expiree,
   ])
 
   return <Contexte value={valeur}>{children}</Contexte>

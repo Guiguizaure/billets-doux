@@ -8,7 +8,7 @@ import {
 } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 
 import Lecture from '@/assets/icons/Lecture.svg'
 import Livre from '@/assets/icons/Livre.svg'
@@ -22,6 +22,7 @@ import { couleurs, rayons } from '@/theme/tokens'
 
 import { Alerte } from './Alerte'
 import { Bouton } from './Bouton'
+import { CasesFantomes } from './CasesFantomes'
 import { Ecran } from './Ecran'
 import { Onde } from './Onde'
 import { PhotoMedia } from './PhotoMedia'
@@ -176,7 +177,7 @@ export function EcranSouvenirs({
 
       {!souvenirs ? (
         erreur ? null : (
-          <ActivityIndicator color={couleurs.texte.encre} />
+          <CasesFantomes nombre={4} />
         )
       ) : (
         <>

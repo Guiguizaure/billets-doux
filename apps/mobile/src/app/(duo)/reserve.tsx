@@ -8,6 +8,7 @@ import Plume from '@/assets/icons/Plume.svg'
 import Plus from '@/assets/icons/Plus.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
 import { Alerte } from '@/components/Alerte'
+import { BandeauInfo } from '@/components/BandeauInfo'
 import { BoutonRondAction } from '@/components/BoutonRondAction'
 import { CarteBrouillon } from '@/components/CarteBrouillon'
 import { Ecran } from '@/components/Ecran'
@@ -94,27 +95,38 @@ export default function Reserve() {
     }
   }
 
-  const ajouterPhoto = async () => {
-    const source = await choisirSourcePhoto()
-    if (!source) return
+  /** Photo choisie mais pas partie (réseau) : on la renvoie d'un toucher, sans la rechoisir. */
+  const [photoEnEchec, setPhotoEnEchec] = useState<string | null>(null)
+
+  const envoyerPhoto = async (uri: string) => {
+    setPhotoEnEchec(null)
+    setEnvoi('Envoi de la photo…')
     try {
-      const photo = await choisirPhoto(source)
-      if (!photo) return
-      setEnvoi('Envoi de la photo…')
-      const media = await televerser({ nature: 'photo', uri: photo.uri }, (p) =>
+      const media = await televerser({ nature: 'photo', uri }, (p) =>
         setEnvoi(`Envoi de la photo… ${Math.round(p * 100)} %`),
       )
       await api.creerBrouillon({ type: 'photo', photo: media.id })
       annoncer('Photo rangée dans la réserve.')
       await charger()
+    } catch {
+      setPhotoEnEchec(uri)
+    } finally {
+      setEnvoi(null)
+    }
+  }
+
+  const ajouterPhoto = async () => {
+    const source = await choisirSourcePhoto()
+    if (!source) return
+    try {
+      const photo = await choisirPhoto(source)
+      if (photo) await envoyerPhoto(photo.uri)
     } catch (e) {
       setErreur(
         e instanceof PermissionRefusee
           ? 'Autorise l’appareil photo dans les réglages du téléphone.'
           : messageErreur(e),
       )
-    } finally {
-      setEnvoi(null)
     }
   }
 
@@ -175,6 +187,13 @@ export default function Reserve() {
         Tout ce que tu notes en passant. Tu le places dans le calendrier quand tu veux.
       </Texte>
       {erreur ? <Alerte message={erreur} /> : null}
+      {photoEnEchec ? (
+        <BandeauInfo
+          Icone={Photo}
+          message="La photo n’est pas partie."
+          action={{ libelle: 'Réessayer', onPress: () => void envoyerPhoto(photoEnEchec) }}
+        />
+      ) : null}
       {envoi || annonce ? (
         <Texte variante="corpsS" style={styles.centre} accessibilityLiveRegion="polite">
           {envoi ?? annonce}

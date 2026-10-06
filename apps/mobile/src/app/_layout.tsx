@@ -4,9 +4,10 @@ import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { Platform, useWindowDimensions } from 'react-native'
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { BandeauReseau } from '@/components/BandeauReseau'
 import { ChoixProvider } from '@/components/Choix'
 import { DialogueProvider } from '@/components/Dialogue'
 import { fuseauDuTelephone } from '@/lib/fuseau'
@@ -92,9 +93,18 @@ function Navigation() {
   }, [phase, fuseauCompte, api, appliquer])
 
   return (
-    <Stack screenOptions={optionsPile}>
-      <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
-    </Stack>
+    <View style={styles.plein}>
+      <Stack screenOptions={optionsPile}>
+        <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
+      </Stack>
+      <BandeauReseau />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  plein: {
+    flex: 1,
+  },
+})

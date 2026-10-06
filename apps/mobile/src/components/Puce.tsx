@@ -18,6 +18,8 @@ export function Puce({ libelle, active, onPress }: Props) {
       accessibilityState={{ checked: active }}
       accessibilityLabel={libelle}
       onPress={onPress}
+      // ~41 dp de haut : la zone touchable va jusqu'à 49 dp.
+      hitSlop={4}
       style={[styles.base, active ? styles.active : styles.inactive]}
     >
       <Texte variante="labelM" couleur={active ? couleurs.fond.carte : couleurs.texte.encre}>

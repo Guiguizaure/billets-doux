@@ -1,5 +1,5 @@
 import type { FC } from 'react'
-import { Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
 import Plus from '@/assets/icons/Plus.svg'
@@ -32,6 +32,9 @@ export function Case({
   Icone = Vocal,
   onPress,
 }: Props) {
+  // Texte agrandi au-delà de ×1,3 : deux colonnes au lieu de trois, et la case s'allonge.
+  const { fontScale } = useWindowDimensions()
+  const taille = fontScale > 1.3 ? styles.large : null
   const aujourdhui = etat === 'aujourdhui'
   const vide = etat === 'vide'
   const couleurDate = aujourdhui
@@ -78,14 +81,18 @@ export function Case({
         onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={libelleAccessible}
-        style={({ pressed }) => [styles.case, styles[etat], pressed && styles.presse]}
+        style={({ pressed }) => [styles.case, taille, styles[etat], pressed && styles.presse]}
       >
         {contenu}
       </Pressable>
     )
   }
   return (
-    <View accessible accessibilityLabel={libelleAccessible} style={[styles.case, styles[etat]]}>
+    <View
+      accessible
+      accessibilityLabel={libelleAccessible}
+      style={[styles.case, taille, styles[etat]]}
+    >
       {contenu}
     </View>
   )
@@ -94,10 +101,15 @@ export function Case({
 const styles = StyleSheet.create({
   case: {
     width: 111,
-    height: 128,
+    minHeight: 128,
+    gap: 10,
     padding: 12,
     borderRadius: rayons.case,
     justifyContent: 'space-between',
+  },
+  /** Deux colonnes dans les 353 dp de la grille. */
+  large: {
+    width: 171,
   },
   ouverte: {
     backgroundColor: couleurs.fond.carte,
@@ -132,6 +144,7 @@ const styles = StyleSheet.create({
   indice: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 6,
   },
   pastille: {

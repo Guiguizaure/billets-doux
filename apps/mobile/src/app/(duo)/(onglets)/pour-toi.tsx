@@ -7,7 +7,7 @@ import {
 } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { AccessibilityInfo, ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { AccessibilityInfo, Pressable, StyleSheet, View } from 'react-native'
 
 import Boite from '@/assets/icons/Boite.svg'
 import Calendrier from '@/assets/icons/Calendrier.svg'
@@ -20,6 +20,7 @@ import { Alerte } from '@/components/Alerte'
 import { BandeauPause } from '@/components/BandeauPause'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
+import { CasesFantomes } from '@/components/CasesFantomes'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
 import { LienTexte } from '@/components/LienTexte'
@@ -97,11 +98,7 @@ export default function PourToi() {
   }
 
   if (!cal) {
-    return (
-      <Ecran bas={false}>
-        {erreur ? <Alerte message={erreur} /> : <ActivityIndicator color={couleurs.texte.encre} />}
-      </Ecran>
-    )
+    return <Ecran bas={false}>{erreur ? <Alerte message={erreur} /> : <CasesFantomes />}</Ecran>
   }
 
   const prenom = cal.destinataire.prenom

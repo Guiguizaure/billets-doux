@@ -9,7 +9,7 @@ import {
 } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 
 import Calendrier from '@/assets/icons/Calendrier.svg'
 import Cloche from '@/assets/icons/Cloche.svg'
@@ -24,6 +24,7 @@ import { Alerte } from '@/components/Alerte'
 import { BandeauPause } from '@/components/BandeauPause'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
+import { CasesFantomes } from '@/components/CasesFantomes'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
 import { useConfirmer } from '@/components/Dialogue'
@@ -112,11 +113,7 @@ export default function PourMoi() {
   )
 
   if (!cal) {
-    return (
-      <Ecran bas={false}>
-        {erreur ? <Alerte message={erreur} /> : <ActivityIndicator color={couleurs.texte.encre} />}
-      </Ecran>
-    )
+    return <Ecran bas={false}>{erreur ? <Alerte message={erreur} /> : <CasesFantomes />}</Ecran>
   }
 
   const prenom = cal.expediteur.prenom

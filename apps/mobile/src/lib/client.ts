@@ -1,6 +1,7 @@
 import { creerClient } from '@billets-doux/shared'
 
 import { apiUrl } from './api'
+import { fetchSuivi } from './reseau'
 
 /**
  * Jeton de la session en cours, en mémoire. Copie persistante : lib/stockage.ts.
@@ -16,4 +17,4 @@ export const jeton = {
 }
 
 /** Client unique des routes de l'appli. */
-export const api = creerClient({ baseUrl: apiUrl(), jeton: jeton.lire })
+export const api = creerClient({ baseUrl: apiUrl(), jeton: jeton.lire, fetchImpl: fetchSuivi })

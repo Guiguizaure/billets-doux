@@ -18,7 +18,7 @@ export function Interrupteur({
       accessibilityRole="switch"
       accessibilityLabel={libelle}
       accessibilityState={{ checked: actif }}
-      hitSlop={8}
+      hitSlop={10}
       style={[styles.piste, actif ? styles.actif : styles.inactif]}
     >
       <View style={[styles.pastille, actif && styles.pastilleActive]} />

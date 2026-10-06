@@ -4,10 +4,12 @@ import { Platform, StyleSheet, View } from 'react-native'
 
 import Cadenas from '@/assets/icons/Cadenas.svg'
 import Coeur from '@/assets/icons/Coeur.svg'
+import Horloge from '@/assets/icons/Horloge.svg'
 import Mot from '@/assets/icons/Mot.svg'
 import Plume from '@/assets/icons/Plume.svg'
 import OiseauMessager from '@/assets/illustrations/oiseau-messager.svg'
 import { Alerte } from '@/components/Alerte'
+import { BandeauInfo } from '@/components/BandeauInfo'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { Ecran } from '@/components/Ecran'
@@ -25,7 +27,7 @@ const promesses = [
 
 /** Écran 1.1 Bienvenue. */
 export default function Bienvenue() {
-  const { connecterDemo } = useSession()
+  const { connecterDemo, sessionExpiree } = useSession()
   const [demo, setDemo] = useState<'pret' | 'enCours'>('pret')
   const [erreur, setErreur] = useState<string | null>(null)
   const decouvrir = async () => {
@@ -66,6 +68,12 @@ export default function Bienvenue() {
         </>
       }
     >
+      {sessionExpiree ? (
+        <BandeauInfo
+          Icone={Horloge}
+          message="Ta session a expiré. Reconnecte-toi pour retrouver tes mots."
+        />
+      ) : null}
       <View style={styles.contenu}>
         {/* Illu/oiseau-messager (240 × 200) affichée à 125 %, comme dans la maquette. */}
         <OiseauMessager width={300} height={250} />
