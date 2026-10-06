@@ -36,6 +36,7 @@ import { boiteAuxLettres } from '@/lib/boiteAuxLettres'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
 import { messageFlash } from '@/lib/messageFlash'
+import { vibrer } from '@/lib/vibrer'
 import { useSourcePhoto } from '@/lib/sourcePhoto'
 import { choisirPhoto, PermissionRefusee } from '@/lib/photo'
 import { televerser } from '@/lib/televersement'
@@ -227,6 +228,7 @@ function Editeur({
       messageFlash.deposer(
         `Programmé pour ${libellesJour(jourDirect).court} à ${formaterHeure(cal.destinataire.heureDecouverte)}`,
       )
+      vibrer.programme()
       router.dismissTo('/pour-toi')
     } catch (e) {
       setMessage(messageErreur(e))

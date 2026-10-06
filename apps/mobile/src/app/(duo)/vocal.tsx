@@ -162,25 +162,23 @@ export default function EcranVocal() {
             onPress={() => void valider()}
           />
         ) : (
-          <View style={styles.actions}>
-            <View style={styles.action}>
-              <Bouton
-                libelle="Dans la réserve"
-                Icone={Boite}
-                variante="secondaire"
-                pleineLargeur
-                onPress={() => void valider()}
-              />
-            </View>
-            <View style={styles.action}>
-              <Bouton
-                libelle="Programmer"
-                Icone={Calendrier}
-                pleineLargeur
-                onPress={() => void valider(true)}
-              />
-            </View>
-          </View>
+          // « Dans la réserve » ne tient pas à côté de « Programmer » à 360 dp (110 px pour
+          // 99) : empilés, Principal au-dessus, comme sur l'écran Écrire.
+          <>
+            <Bouton
+              libelle="Programmer"
+              Icone={Calendrier}
+              pleineLargeur
+              onPress={() => void valider(true)}
+            />
+            <Bouton
+              libelle="Dans la réserve"
+              Icone={Boite}
+              variante="secondaire"
+              pleineLargeur
+              onPress={() => void valider()}
+            />
+          </>
         )
       }
     >
@@ -283,13 +281,6 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'center',
     gap: 36,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  action: {
-    flex: 1,
   },
   carre: {
     width: 26,

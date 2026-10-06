@@ -351,6 +351,7 @@ function FeuilleReponse({
               Icone={Vocal}
               variante="secondaire"
               pleineLargeur
+              compact
               onPress={onVocal}
             />
           </View>
@@ -360,6 +361,7 @@ function FeuilleReponse({
             libelle="Envoyer"
             Icone={Envoyer}
             pleineLargeur
+            compact
             enCours={enCours}
             onPress={() => void envoyer()}
           />

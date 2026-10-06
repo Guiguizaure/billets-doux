@@ -13,16 +13,19 @@ import Boite from '@/assets/icons/Boite.svg'
 import Calendrier from '@/assets/icons/Calendrier.svg'
 import Cloche from '@/assets/icons/Cloche.svg'
 import Lune from '@/assets/icons/Lune.svg'
+import Plume from '@/assets/icons/Plume.svg'
 import Plus from '@/assets/icons/Plus.svg'
 import Suivant from '@/assets/icons/Suivant.svg'
-import Valider from '@/assets/icons/Valider.svg'
+import FilEntreNous from '@/assets/illustrations/fil-entre-nous.svg'
 import { Alerte } from '@/components/Alerte'
 import { BandeauPause } from '@/components/BandeauPause'
+import { CarteTampon } from '@/components/CarteTampon'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { CasesFantomes } from '@/components/CasesFantomes'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
+import { EtatVide } from '@/components/EtatVide'
 import { LienTexte } from '@/components/LienTexte'
 import { Puce } from '@/components/Puce'
 import { REACTIONS } from '@/components/Reactions'
@@ -105,6 +108,9 @@ export default function PourToi() {
   const resume = resumer(cal)
   const cases = construireCases(cal)
 
+  // Duo tout neuf : ni mot programmé, ni brouillon.
+  const vide = cal.mots.length === 0 && cal.brouillons === 0
+
   const ouvrirCase = (c: CaseAuteur) => {
     // Case lue : on relit le mot, avec la réaction et la réponse (d'abord celui qui en a une).
     const lu =
@@ -132,6 +138,7 @@ export default function PourToi() {
               Icone={Boite}
               variante="secondaire"
               pleineLargeur
+              compact
               onPress={() => router.push('/reserve')}
             />
           </View>
@@ -140,6 +147,7 @@ export default function PourToi() {
               libelle="Nouveau mot"
               Icone={Plus}
               pleineLargeur
+              compact
               onPress={() => router.push('/ecrire')}
             />
           </View>
@@ -169,84 +177,97 @@ export default function PourToi() {
       </View>
 
       {erreur ? <Alerte message={erreur} /> : null}
-      {confirmation ? (
-        <View style={styles.confirmation} accessibilityLiveRegion="polite">
-          <BoutonRond Icone={Valider} fond={couleurs.decor.sauge} />
-          <Texte variante="labelM" style={styles.flex}>
-            {confirmation}
-          </Texte>
-        </View>
-      ) : null}
+      {confirmation ? <CarteTampon message={confirmation} /> : null}
 
-      {resume.prets > 0 && resume.jusquAu ? (
-        <View
-          style={styles.carte}
-          accessible
-          accessibilityLabel={`${resume.prets} mots prêts, jusqu’au ${libellesJour(resume.jusquAu).date}`}
-        >
-          <View style={styles.legende}>
-            <Texte variante="labelM">
-              {resume.prets} mot{resume.prets > 1 ? 's' : ''} prêt{resume.prets > 1 ? 's' : ''}
-            </Texte>
-            <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-              jusqu’au {libellesJour(resume.jusquAu).date}
-            </Texte>
-          </View>
-          <View style={styles.piste}>
-            <View style={[styles.avance, { width: `${Math.round(resume.progression * 100)}%` }]} />
-          </View>
-        </View>
-      ) : null}
-
-      {moi?.duo?.retrouvailles ? <CarteRetrouvailles jour={moi.duo.retrouvailles} /> : null}
-
-      {/* Encart validé : papier ombre (pas de texte sur une couleur de décor). */}
-      <View style={styles.encart}>
-        <BoutonRond Icone={Cloche} fond={couleurs.decor.soleil} />
-        <View style={styles.encartTexte}>
-          <Texte variante="labelM">
-            {resume.semaineProchaine > 0
-              ? `Semaine prochaine : ${resume.semaineProchaine} mot${resume.semaineProchaine > 1 ? 's' : ''} prêt${resume.semaineProchaine > 1 ? 's' : ''}.`
-              : 'Semaine prochaine : rien de prévu pour l’instant.'}
-          </Texte>
-          <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-            Rien ne presse, un jour vide reste une surprise.
-          </Texte>
-        </View>
-      </View>
-
-      {resume.dansLaSemaine.map((f) => (
-        <Texte key={f.debut} variante="corpsS" couleur={couleurs.texte.encreDouce}>
-          Quelque part entre le {libellesJour(f.debut).date} et le {libellesJour(f.fin).date} :{' '}
-          {f.nombre} mot{f.nombre > 1 ? 's' : ''} surprise
-        </Texte>
-      ))}
-
-      <View style={styles.cases}>
-        {cases.map((c) => {
-          const premier = c.mots[0]
-          return (
-            <Case
-              key={c.cle}
-              etat={ETAT_CASE[c.etat]}
-              jourSemaine={c.titre}
-              jour={c.chiffre}
-              info={c.info}
-              Icone={
-                c.reaction
-                  ? REACTIONS[c.reaction].Icone
-                  : premier
-                    ? TYPES_DE_MOT[premier.type].Icone
-                    : undefined
-              }
-              libelleAccessible={c.libelleAccessible}
-              onPress={c.etat === 'passee' ? undefined : () => ouvrirCase(c)}
+      {vide ? (
+        <EtatVide
+          illustration={<FilEntreNous width={192} height={90} />}
+          titre={`Un premier mot pour ${prenom} ?`}
+          texte="Écris-le maintenant et choisis le jour où il s’ouvrira."
+          action={
+            <Bouton
+              libelle="Écrire un premier mot"
+              Icone={Plume}
+              pleineLargeur
+              onPress={() => router.push('/ecrire')}
             />
-          )
-        })}
-      </View>
+          }
+        />
+      ) : (
+        <>
+          {resume.prets > 0 && resume.jusquAu ? (
+            <View
+              style={styles.carte}
+              accessible
+              accessibilityLabel={`${resume.prets} mots prêts, jusqu’au ${libellesJour(resume.jusquAu).date}`}
+            >
+              <View style={styles.legende}>
+                <Texte variante="labelM">
+                  {resume.prets} mot{resume.prets > 1 ? 's' : ''} prêt{resume.prets > 1 ? 's' : ''}
+                </Texte>
+                <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
+                  jusqu’au {libellesJour(resume.jusquAu).date}
+                </Texte>
+              </View>
+              <View style={styles.piste}>
+                <View
+                  style={[styles.avance, { width: `${Math.round(resume.progression * 100)}%` }]}
+                />
+              </View>
+            </View>
+          ) : null}
 
-      <LigneOuvreQuand nombre={resume.lettres} />
+          {moi?.duo?.retrouvailles ? <CarteRetrouvailles jour={moi.duo.retrouvailles} /> : null}
+
+          {/* Encart validé : papier ombre (pas de texte sur une couleur de décor). */}
+          <View style={styles.encart}>
+            <BoutonRond Icone={Cloche} fond={couleurs.decor.soleil} />
+            <View style={styles.encartTexte}>
+              <Texte variante="labelM">
+                {resume.semaineProchaine > 0
+                  ? `Semaine prochaine : ${resume.semaineProchaine} mot${resume.semaineProchaine > 1 ? 's' : ''} prêt${resume.semaineProchaine > 1 ? 's' : ''}.`
+                  : 'Semaine prochaine : rien de prévu pour l’instant.'}
+              </Texte>
+              <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
+                Rien ne presse, un jour vide reste une surprise.
+              </Texte>
+            </View>
+          </View>
+
+          {resume.dansLaSemaine.map((f) => (
+            <Texte key={f.debut} variante="corpsS" couleur={couleurs.texte.encreDouce}>
+              Quelque part entre le {libellesJour(f.debut).date} et le {libellesJour(f.fin).date} :{' '}
+              {f.nombre} mot{f.nombre > 1 ? 's' : ''} surprise
+            </Texte>
+          ))}
+
+          <View style={styles.cases}>
+            {cases.map((c) => {
+              const premier = c.mots[0]
+              return (
+                <Case
+                  key={c.cle}
+                  etat={ETAT_CASE[c.etat]}
+                  jourSemaine={c.titre}
+                  jour={c.chiffre}
+                  info={c.info}
+                  Icone={
+                    c.reaction
+                      ? REACTIONS[c.reaction].Icone
+                      : premier
+                        ? TYPES_DE_MOT[premier.type].Icone
+                        : undefined
+                  }
+                  libelleAccessible={c.libelleAccessible}
+                  onPress={c.etat === 'passee' ? undefined : () => ouvrirCase(c)}
+                />
+              )
+            })}
+          </View>
+
+          <LigneOuvreQuand nombre={resume.lettres} />
+        </>
+      )}
     </Ecran>
   )
 }
@@ -350,16 +371,6 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   ouvreQuand: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 14,
-    borderRadius: rayons.carte,
-    borderWidth: 1,
-    borderColor: couleurs.trait.ligne,
-    backgroundColor: couleurs.fond.carte,
-  },
-  confirmation: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,

@@ -1,12 +1,21 @@
 import type { Reaction } from '@billets-doux/shared'
 import type { FC } from 'react'
 import { Pressable, StyleSheet, View } from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated'
 import type { SvgProps } from 'react-native-svg'
 
 import Coeur from '@/assets/icons/Coeur.svg'
 import Joker from '@/assets/icons/Joker.svg'
 import Lune from '@/assets/icons/Lune.svg'
 import Surprise from '@/assets/icons/Surprise.svg'
+import { vibrer } from '@/lib/vibrer'
 import { couleurs, rayons } from '@/theme/tokens'
 
 import { Texte } from './Texte'
@@ -35,30 +44,69 @@ export function Reactions({
         TA RÉACTION
       </Texte>
       <View style={styles.rangee} accessibilityRole="radiogroup" accessibilityLabel="Ta réaction">
-        {ORDRE.map((r) => {
-          const { libelle, Icone, fond } = REACTIONS[r]
-          const choisie = valeur === r
-          return (
-            <Pressable
-              key={r}
-              onPress={() => onChange(choisie ? null : r)}
-              accessibilityRole="radio"
-              accessibilityLabel={libelle}
-              accessibilityState={{ checked: choisie }}
-              hitSlop={4}
-              style={({ pressed }) => [
-                styles.rond,
-                { backgroundColor: fond },
-                choisie && styles.choisie,
-                pressed && styles.presse,
-              ]}
-            >
-              <Icone width={22} height={22} color={couleurs.texte.encre} />
-            </Pressable>
-          )
-        })}
+        {ORDRE.map((r) => (
+          <PastilleChoix
+            key={r}
+            reaction={r}
+            choisie={valeur === r}
+            onPress={() => onChange(valeur === r ? null : r)}
+          />
+        ))}
       </View>
     </View>
+  )
+}
+
+/**
+ * Une réaction à choisir : petit rebond (220 ms, choix validé à l'étape 8, raccourci) et
+ * vibration légère. Sans rebond si le système demande moins d'animations.
+ */
+function PastilleChoix({
+  reaction,
+  choisie,
+  onPress,
+}: {
+  reaction: Reaction
+  choisie: boolean
+  onPress: () => void
+}) {
+  const { libelle, Icone, fond } = REACTIONS[reaction]
+  const reduit = useReducedMotion()
+  const echelle = useSharedValue(1)
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: echelle.get() }] }))
+  return (
+    <Pressable
+      onPress={() => {
+        if (!reduit) {
+          echelle.set(
+            withSequence(
+              withTiming(1.2, { duration: 80, easing: Easing.out(Easing.quad) }),
+              withTiming(1, { duration: 140, easing: Easing.out(Easing.quad) }),
+            ),
+          )
+        }
+        vibrer.reaction()
+        onPress()
+      }}
+      accessibilityRole="radio"
+      accessibilityLabel={libelle}
+      accessibilityState={{ checked: choisie }}
+      hitSlop={4}
+    >
+      {({ pressed }) => (
+        <Animated.View
+          style={[
+            styles.rond,
+            { backgroundColor: fond },
+            choisie && styles.choisie,
+            pressed && styles.presse,
+            style,
+          ]}
+        >
+          <Icone width={22} height={22} color={couleurs.texte.encre} />
+        </Animated.View>
+      )}
+    </Pressable>
   )
 }
 

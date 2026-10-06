@@ -27,7 +27,7 @@ const chargerPolices =
   Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 
 /** Variante du cadre de la version web, choisie sur la page de test. */
-const VARIANTE_CADRE = 'telephone'
+const VARIANTE_CADRE = 'timbre'
 
 /**
  * Version web sur grand écran, page principale (pas déjà dans le cadre, pas la page de test) :

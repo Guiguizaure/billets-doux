@@ -1,5 +1,15 @@
-import type { FC } from 'react'
+import { type FC, type ReactNode, useEffect } from 'react'
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated'
 import type { SvgProps } from 'react-native-svg'
 
 import Plus from '@/assets/icons/Plus.svg'
@@ -77,25 +87,57 @@ export function Case({
 
   if (onPress) {
     return (
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="button"
-        accessibilityLabel={libelleAccessible}
-        style={({ pressed }) => [styles.case, taille, styles[etat], pressed && styles.presse]}
-      >
-        {contenu}
-      </Pressable>
+      <Respire actif={aujourdhui}>
+        <Pressable
+          onPress={onPress}
+          accessibilityRole="button"
+          accessibilityLabel={libelleAccessible}
+          style={({ pressed }) => [styles.case, taille, styles[etat], pressed && styles.presse]}
+        >
+          {contenu}
+        </Pressable>
+      </Respire>
     )
   }
   return (
-    <View
-      accessible
-      accessibilityLabel={libelleAccessible}
-      style={[styles.case, taille, styles[etat]]}
-    >
-      {contenu}
-    </View>
+    <Respire actif={aujourdhui}>
+      <View
+        accessible
+        accessibilityLabel={libelleAccessible}
+        style={[styles.case, taille, styles[etat]]}
+      >
+        {contenu}
+      </View>
+    </Respire>
   )
+}
+
+/**
+ * La case « à ouvrir » respire doucement (choix validé à l'étape 8) : 1 → 1,03 en 1,6 s.
+ * Immobile si le système demande moins d'animations.
+ */
+function Respire({ actif, children }: { actif: boolean; children: ReactNode }) {
+  const reduit = useReducedMotion()
+  const echelle = useSharedValue(1)
+  useEffect(() => {
+    if (!actif || reduit) {
+      cancelAnimation(echelle)
+      echelle.set(1)
+      return
+    }
+    echelle.set(
+      withRepeat(
+        withSequence(
+          withTiming(1.03, { duration: 800, easing: Easing.inOut(Easing.sin) }),
+          withTiming(1, { duration: 800, easing: Easing.inOut(Easing.sin) }),
+        ),
+        -1,
+      ),
+    )
+    return () => cancelAnimation(echelle)
+  }, [actif, reduit, echelle])
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: echelle.get() }] }))
+  return <Animated.View style={style}>{children}</Animated.View>
 }
 
 const styles = StyleSheet.create({

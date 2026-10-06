@@ -22,6 +22,7 @@ import { couleurs, rayons } from '@/theme/tokens'
 
 import { Alerte } from './Alerte'
 import { Bouton } from './Bouton'
+import { EtatVide } from './EtatVide'
 import { CasesFantomes } from './CasesFantomes'
 import { Ecran } from './Ecran'
 import { Onde } from './Onde'
@@ -136,7 +137,7 @@ export function EcranSouvenirs({
           </Texte>
           <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
             {total === 0
-              ? 'Les mots ouverts viendront se ranger ici.'
+              ? 'Rien pour l’instant.'
               : `${total} mot${total > 1 ? 's' : ''}${depuis ? ` depuis le ${depuis}` : ''}`}
           </Texte>
         </View>
@@ -188,6 +189,12 @@ export function EcranSouvenirs({
         )
       ) : (
         <>
+          {total === 0 && jamais.length === 0 ? (
+            <EtatVide
+              titre="Pas encore de souvenir"
+              texte={`Chaque mot ouvert, le tien comme celui de ${moi?.duo?.partenaire?.prenom ?? 'l’autre'}, viendra se ranger ici.`}
+            />
+          ) : null}
           <Mosaique mots={mots.slice(0, affiches)} fuseau={fuseau} />
           {mots.length > affiches ? (
             <Bouton

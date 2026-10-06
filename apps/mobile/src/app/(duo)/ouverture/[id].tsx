@@ -17,6 +17,7 @@ import { LienTexte } from '@/components/LienTexte'
 import { Texte } from '@/components/Texte'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
+import { vibrer } from '@/lib/vibrer'
 import { useSession } from '@/session/SessionProvider'
 import { couleurs } from '@/theme/tokens'
 
@@ -103,6 +104,7 @@ export default function Ouverture() {
     setErreur(null)
     try {
       await api.ouvrir(id, joker === '1')
+      vibrer.cachet()
       const duree = reduit ? DUREE_DOUCE : DUREE_CACHET
       casse.set(withTiming(1, { duration: duree, easing: Easing.out(Easing.cubic) }))
       setTimeout(() => {
