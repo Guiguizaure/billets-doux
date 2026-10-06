@@ -10,7 +10,7 @@ import {
   retirerAppareil,
   utiliserTransport,
 } from '@/services/notifications'
-import { programmer } from '@/services/programmation'
+import { programmer, recalculerOuvertures } from '@/services/programmation'
 import { ouvrir, repondre } from '@/services/reception'
 import { notifierMotsOuvrables, rappelerAuteurs } from '@/services/taches'
 
@@ -196,6 +196,30 @@ describe('mots arrivés à leur heure', () => {
       new Date('2026-10-20T09:00:00Z'),
     )
     await notifierMotsOuvrables(payload, new Date('2026-10-23T06:00:30Z'))
+    expect(envoyes).toHaveLength(2)
+  })
+})
+
+describe('changement d’heure du destinataire', () => {
+  it('heure déjà passée : pas de deuxième annonce ; heure plus tardive : nouvelle annonce', async () => {
+    const { lina, leo } = await duoAvecTelephones()
+    await motPour(lina.id, { mode: 'date', jour: '2026-10-20' })
+    await notifierMotsOuvrables(payload, LE_20_A_8H)
+    expect(envoyes).toHaveLength(1)
+
+    // Le recalcul (déclenché par le changement d'heure) avec l'instant simulé.
+    const leoDoc = await payload.findByID({ collection: 'users', id: leo.id, depth: 0 })
+    const changerHeure = async (heureDecouverte: string, maintenant: Date) =>
+      recalculerOuvertures(await requete(payload), { ...leoDoc, heureDecouverte }, maintenant)
+
+    // À 10 h, Léo passe à 7 h 30 : le mot reste ouvrable, il a déjà été annoncé.
+    await changerHeure('07:30', new Date('2026-10-20T08:00:00Z'))
+    await notifierMotsOuvrables(payload, new Date('2026-10-20T08:00:30Z'))
+    expect(envoyes).toHaveLength(1)
+
+    // À 10 h 05, il passe à 21 h : le mot redevient scellé, annoncé à 21 h.
+    await changerHeure('21:00', new Date('2026-10-20T08:05:00Z'))
+    await notifierMotsOuvrables(payload, new Date('2026-10-20T19:00:30Z'))
     expect(envoyes).toHaveLength(2)
   })
 })

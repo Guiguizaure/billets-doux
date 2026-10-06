@@ -194,7 +194,11 @@ export async function changerRythme(req: PayloadRequest, userId: string, rythme:
  * passé (heure avancée après son passage aujourd'hui), le mot s'ouvre tout de suite :
  * on ne le décale pas au lendemain.
  */
-export async function recalculerOuvertures(req: PayloadRequest, destinataire: User) {
+export async function recalculerOuvertures(
+  req: PayloadRequest,
+  destinataire: User,
+  maintenant = new Date(),
+) {
   const { docs } = await req.payload.find({
     collection: 'mots',
     where: {
@@ -216,10 +220,13 @@ export async function recalculerOuvertures(req: PayloadRequest, destinataire: Us
       destinataire.fuseauHoraire,
     ).toISOString()
     if (unlockAt !== mot.unlockAt) {
+      // Redevenu scellé : il sera annoncé à sa nouvelle heure. Toujours ouvrable : l'annonce
+      // déjà faite vaut toujours, on ne prévient pas deux fois.
+      const rescelle = new Date(unlockAt) > maintenant
       await req.payload.update({
         collection: 'mots',
         id: mot.id,
-        data: { unlockAt, notifiedAt: null },
+        data: rescelle ? { unlockAt, notifiedAt: null } : { unlockAt },
         req,
       })
     }
