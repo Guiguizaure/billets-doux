@@ -6,6 +6,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Bouton } from '@/components/Bouton'
 import { Texte } from '@/components/Texte'
 import { SectionAnimations } from '@/lab/SectionAnimations'
+import { SectionCadre } from '@/lab/SectionCadre'
+import { SectionEtatsVides } from '@/lab/SectionEtatsVides'
+import { SectionFinitions } from '@/lab/SectionFinitions'
 import { SectionPalette } from '@/lab/SectionPalette'
 import { SectionStyles } from '@/lab/SectionStyles'
 import { SectionTransitions } from '@/lab/SectionTransitions'
@@ -35,6 +38,9 @@ export default function Lab() {
           Temporaire, non indexée, visible en développement seulement. Les choix faits ici
           deviennent les règles de l’appli.
         </Texte>
+        <SectionFinitions />
+        <SectionCadre />
+        <SectionEtatsVides />
         <SectionPalette />
         <SectionTypo />
         <SectionStyles />
@@ -55,7 +61,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 64,
     width: '100%',
-    maxWidth: 760,
+    maxWidth: 1180,
     alignSelf: 'center',
   },
 })

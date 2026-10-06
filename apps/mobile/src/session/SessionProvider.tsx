@@ -39,6 +39,8 @@ type Session = {
   retenirCode: (code: string | null) => void
   inscrire: (donnees: Inscription) => Promise<void>
   connecter: (donnees: Connexion) => Promise<void>
+  /** Version web : entre dans le duo de démo (compte de Léo), sans mot de passe. */
+  connecterDemo: () => Promise<void>
   deconnecter: () => Promise<void>
   /** Remplace la vue « moi » par celle renvoyée par une route de l'API. */
   appliquer: (moi: Moi) => void
@@ -100,6 +102,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async (donnees: Connexion) => ouvrir(await api.connexion(donnees)),
     [ouvrir],
   )
+  const connecterDemo = useCallback(async () => ouvrir(await api.connexionDemo()), [ouvrir])
   const deconnecter = useCallback(async () => {
     // Avant de fermer la session : cet appareil ne reçoit plus les notifications du compte.
     await retirerCetAppareil()
@@ -117,12 +120,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       retenirCode,
       inscrire,
       connecter,
+      connecterDemo,
       deconnecter,
       appliquer,
       actualiser,
       reessayer,
     }
-  }, [etat, codeEnAttente, inscrire, connecter, deconnecter, appliquer, actualiser, reessayer])
+  }, [
+    etat,
+    codeEnAttente,
+    inscrire,
+    connecter,
+    connecterDemo,
+    deconnecter,
+    appliquer,
+    actualiser,
+    reessayer,
+  ])
 
   return <Contexte value={valeur}>{children}</Contexte>
 }

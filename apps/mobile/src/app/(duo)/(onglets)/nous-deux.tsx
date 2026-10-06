@@ -123,6 +123,8 @@ export default function NousDeux() {
   }
 
   const depuis = vue.depuis ? libellesJour(jourLocal(new Date(vue.depuis), fuseau)).date : null
+  // Duo de démo : rien d'irréversible (l'API le refuse aussi).
+  const demo = Boolean(moi?.utilisateur.demo)
   const partenaire = vue.partenaire.prenom
 
   return (
@@ -220,18 +222,24 @@ export default function NousDeux() {
         <LigneReglage
           Icone={Fermer}
           titre="Fermer le duo"
-          danger
-          onPress={() => setFeuille('fermer')}
+          detail={demo ? 'désactivé dans la démo' : null}
+          danger={!demo}
+          onPress={demo ? undefined : () => setFeuille('fermer')}
           derniere
         />
       </CarteReglages>
 
       <View style={styles.liens}>
-        <LienTexte libelle="Se déconnecter" onPress={() => void deconnecter()} />
         <LienTexte
-          libelle="Supprimer mon compte"
-          onPress={() => router.push('/compte/supprimer')}
+          libelle={demo ? 'Quitter la démo' : 'Se déconnecter'}
+          onPress={() => void deconnecter()}
         />
+        {demo ? null : (
+          <LienTexte
+            libelle="Supprimer mon compte"
+            onPress={() => router.push('/compte/supprimer')}
+          />
+        )}
         {__DEV__ ? (
           <LienTexte libelle="Page de test (développement)" onPress={() => router.push('/lab')} />
         ) : null}
