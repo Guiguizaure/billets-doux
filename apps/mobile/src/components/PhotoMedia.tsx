@@ -1,4 +1,6 @@
-import { ActivityIndicator, Image, StyleSheet, View } from 'react-native'
+import { Image } from 'expo-image'
+import { ActivityIndicator, StyleSheet, View } from 'react-native'
+import { useReducedMotion } from 'react-native-reanimated'
 
 import { useUrlMedia } from '@/lib/useUrlMedia'
 import { couleurs } from '@/theme/tokens'
@@ -19,13 +21,18 @@ export function PhotoMedia({
   forme?: 'paysage' | 'carre'
 }) {
   const { url, erreur } = useUrlMedia(mediaId, uriLocale)
+  const reduit = useReducedMotion()
   return (
     <View style={[styles.cadre, forme === 'carre' && styles.carre]}>
       {url ? (
+        // Cache disque sous l'identifiant du média, pas de l'URL signée qui change à chaque
+        // demande : une photo déjà vue s'affiche sans la retélécharger.
         <Image
-          source={{ uri: url }}
+          source={{ uri: url, cacheKey: mediaId ?? undefined }}
+          cachePolicy="memory-disk"
+          contentFit="cover"
+          transition={reduit ? 0 : 150}
           style={styles.image}
-          resizeMode="cover"
           accessibilityLabel={description}
         />
       ) : erreur ? (

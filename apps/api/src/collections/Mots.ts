@@ -45,6 +45,16 @@ export const Mots: CollectionConfig = {
       },
     ],
   },
+  // Index composés des requêtes fréquentes : calendriers (auteur ou destinataire, duo,
+  // statut), souvenirs et réserve (auteur ou destinataire, statut), tâche de chaque minute
+  // (statut, heure d'ouverture).
+  indexes: [
+    { fields: ['destinataire', 'duo', 'statut'] },
+    { fields: ['auteur', 'duo', 'statut'] },
+    { fields: ['destinataire', 'statut'] },
+    { fields: ['auteur', 'statut'] },
+    { fields: ['statut', 'unlockAt'] },
+  ],
   fields: [
     { name: 'duo', type: 'relationship', relationTo: 'duos', required: true, index: true },
     { name: 'auteur', type: 'relationship', relationTo: 'users', required: true, index: true },

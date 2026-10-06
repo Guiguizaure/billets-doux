@@ -38,6 +38,9 @@ const FILTRES: { valeur: Filtre; libelle: string }[] = [
   { valeur: 'photo', libelle: 'Photos' },
 ]
 
+/** Les souvenirs s'affichent par paquets : une longue histoire ne ralentit pas l'écran. */
+const PAQUET = 24
+
 const garde = (filtre: Filtre, type: TypeMot) => filtre === 'tout' || filtre === type
 
 /** Onde décorative d'une carte vocale (on n'a pas les niveaux du vocal). */
@@ -60,6 +63,7 @@ export function EcranSouvenirs({
   const [souvenirs, setSouvenirs] = useState<Souvenirs | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
   const [filtre, setFiltre] = useState<Filtre>('tout')
+  const [affiches, setAffiches] = useState(PAQUET)
   const [etatExport, setExport] = useState<'pret' | 'enCours'>('pret')
 
   useFocusEffect(
@@ -146,7 +150,10 @@ export function EcranSouvenirs({
             key={f.valeur}
             libelle={f.libelle}
             active={filtre === f.valeur}
-            onPress={() => setFiltre(f.valeur)}
+            onPress={() => {
+              setFiltre(f.valeur)
+              setAffiches(PAQUET)
+            }}
           />
         ))}
       </View>
@@ -181,7 +188,15 @@ export function EcranSouvenirs({
         )
       ) : (
         <>
-          <Mosaique mots={mots} fuseau={fuseau} />
+          <Mosaique mots={mots.slice(0, affiches)} fuseau={fuseau} />
+          {mots.length > affiches ? (
+            <Bouton
+              libelle={`Afficher plus de souvenirs (${mots.length - affiches})`}
+              variante="discret"
+              pleineLargeur
+              onPress={() => setAffiches((n) => n + PAQUET)}
+            />
+          ) : null}
           {mots.length === 0 && total > 0 ? (
             <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
               Rien de ce type pour l’instant.
