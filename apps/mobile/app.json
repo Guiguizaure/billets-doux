@@ -67,6 +67,14 @@
           "cameraPermission": "Billets doux utilise l’appareil photo pour joindre une photo à tes mots."
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#C8442C",
+          "defaultChannel": "mots"
+        }
+      ],
       "expo-asset"
     ],
     "experiments": {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 
 import Calendrier from '@/assets/icons/Calendrier.svg'
+import Cloche from '@/assets/icons/Cloche.svg'
 import { Alerte } from '@/components/Alerte'
 import { Bouton } from '@/components/Bouton'
 import { DuoTimbres } from '@/components/DuoTimbres'
@@ -11,6 +12,7 @@ import { Ecran } from '@/components/Ecran'
 import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
 import { messageErreur } from '@/lib/formulaires'
+import { demanderNotifications, notificationsPossibles } from '@/lib/notifications'
 import { useSession } from '@/session/SessionProvider'
 import { couleurs, rayons } from '@/theme/tokens'
 
@@ -26,6 +28,8 @@ export default function Heure() {
     setErreur(null)
     try {
       appliquer(await api.mettreAJour({ heureDecouverte: heure }))
+      // Puis la question du système ; refusée, une carte la reproposera dans « Pour moi ».
+      await demanderNotifications().catch(() => undefined)
       router.replace('/pour-moi')
     } catch (e) {
       setErreur(messageErreur(e))
@@ -76,6 +80,14 @@ export default function Heure() {
             Tu pourras la changer quand tu veux.
           </Texte>
         </View>
+        <View style={styles.prevenir}>
+          <Cloche width={18} height={18} color={couleurs.texte.encreDouce} />
+          <Texte variante="corpsS" couleur={couleurs.texte.encreDouce} style={styles.flex}>
+            {notificationsPossibles
+              ? `On te prévient à ${formaterHeure(heure)} quand un mot s’ouvre.`
+              : 'Les notifications arrivent sur le téléphone, pas sur la version web.'}
+          </Texte>
+        </View>
       </View>
     </Ecran>
   )
@@ -102,6 +114,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: couleurs.trait.ligne,
     backgroundColor: couleurs.fond.carte,
+  },
+  prevenir: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  flex: {
+    flex: 1,
   },
   heures: {
     flexDirection: 'row',

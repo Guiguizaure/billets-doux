@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { ChoixProvider } from '@/components/Choix'
 import { DialogueProvider } from '@/components/Dialogue'
+import { enregistrerCetAppareil, useOuvertureDesNotifications } from '@/lib/notifications'
 import { SessionProvider, useSession } from '@/session/SessionProvider'
 import { fichiersPolices } from '@/theme/polices'
 import { optionsPile } from '@/theme/navigation'
@@ -47,6 +48,13 @@ function Navigation() {
   useEffect(() => {
     if (phase !== 'chargement') SplashScreen.hideAsync()
   }, [phase])
+
+  // Duo formé : cet appareil (s'il l'autorise) reçoit les notifications, et les toucher
+  // ouvre le bon écran.
+  useEffect(() => {
+    if (phase === 'duo') void enregistrerCetAppareil()
+  }, [phase])
+  useOuvertureDesNotifications(phase === 'duo')
 
   return (
     <Stack screenOptions={optionsPile}>
