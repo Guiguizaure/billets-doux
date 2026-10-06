@@ -28,6 +28,8 @@ const SANS_PROGRAMMATION = {
   semaineFin: null,
   unlockAt: null,
   titreOuvreQuand: null,
+  // Nouvelle date : le mot sera annoncé à sa nouvelle heure.
+  notifiedAt: null,
 }
 
 /**
@@ -214,7 +216,12 @@ export async function recalculerOuvertures(req: PayloadRequest, destinataire: Us
       destinataire.fuseauHoraire,
     ).toISOString()
     if (unlockAt !== mot.unlockAt) {
-      await req.payload.update({ collection: 'mots', id: mot.id, data: { unlockAt }, req })
+      await req.payload.update({
+        collection: 'mots',
+        id: mot.id,
+        data: { unlockAt, notifiedAt: null },
+        req,
+      })
     }
   }
   return docs.length

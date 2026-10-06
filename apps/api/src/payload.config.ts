@@ -7,12 +7,15 @@ import { fileURLToPath } from 'url'
 
 import { Admins } from './collections/Admins'
 import { Duos } from './collections/Duos'
+import { EnvoisPush } from './collections/EnvoisPush'
 import { Medias } from './collections/Medias'
 import { Mots } from './collections/Mots'
 import { Reponses } from './collections/Reponses'
 import { Users } from './collections/Users'
 import { comptesEndpoints } from './endpoints/comptes'
 import { health } from './endpoints/health'
+import { releverRecus } from './services/notifications'
+import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -35,7 +38,7 @@ export default buildConfig({
     supportedLanguages: { fr },
     fallbackLanguage: 'fr',
   },
-  collections: [Admins, Users, Duos, Mots, Medias, Reponses],
+  collections: [Admins, Users, Duos, Mots, Medias, Reponses, EnvoisPush],
   endpoints: [health, ...comptesEndpoints],
   cors: corsOrigins,
   csrf: corsOrigins,
@@ -50,4 +53,32 @@ export default buildConfig({
   }),
   sharp,
   graphQL: { disable: true },
+  /**
+   * Tâches planifiées, exécutées par le serveur de l'API lui-même (file « minute »).
+   * Toutes les minutes : un rituel de 8 h doit sonner à 8 h, pas à 8 h 04.
+   * Coupées pendant les tests (appelés directement) et avec TACHES_DESACTIVEES=1.
+   */
+  jobs: {
+    tasks: [
+      {
+        slug: 'motsOuvrables',
+        schedule: [{ cron: '* * * * *', queue: 'minute' }],
+        handler: async ({ req }) => ({
+          output: { annonces: await notifierMotsOuvrables(req.payload) },
+        }),
+      },
+      {
+        slug: 'rappelDoux',
+        schedule: [{ cron: '*/15 * * * *', queue: 'minute' }],
+        handler: async ({ req }) => ({ output: { rappeles: await rappelerAuteurs(req.payload) } }),
+      },
+      {
+        slug: 'recusPush',
+        schedule: [{ cron: '*/15 * * * *', queue: 'minute' }],
+        handler: async ({ req }) => ({ output: { releves: await releverRecus(req.payload) } }),
+      },
+    ],
+    autoRun: [{ cron: '* * * * *', queue: 'minute' }],
+    shouldAutoRun: () => process.env.NODE_ENV !== 'test' && process.env.TACHES_DESACTIVEES !== '1',
+  },
 })
