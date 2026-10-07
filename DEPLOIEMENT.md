@@ -99,7 +99,8 @@ heroku apps:create <nom-de-l-app> --region eu --stack heroku-24
 heroku buildpacks:set heroku/nodejs -a <nom-de-l-app>
 ```
 
-Le buildpack Node lit `engines.node` (24.x) et `packageManager` (pnpm 11.3.0) dans `package.json`.
+Le buildpack Node lit `engines.node` (24.21.0, la même version que `.nvmrc` pour Pages et
+`eas.json` pour les builds Android) et `packageManager` (pnpm 11.3.0) dans `package.json`.
 Il installe tout le dépôt, puis lance `heroku-postbuild`, qui ne construit que l'API (serveur
 autonome Next, 76 Mo). `heroku-cleanup` supprime ensuite le reste (Expo, dépendances) : l'image
 pèse environ 97 Mo. Le `Procfile` démarre `apps/api/.next/standalone/apps/api/server.js`.

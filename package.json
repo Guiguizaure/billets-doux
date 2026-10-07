@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@11.3.0",
   "engines": {
-    "node": "24.x"
+    "node": "24.21.0"
   },
   "scripts": {
     "db:up": "docker compose up -d --wait mongo s3 && pnpm --filter @billets-doux/api stockage:preparer",
