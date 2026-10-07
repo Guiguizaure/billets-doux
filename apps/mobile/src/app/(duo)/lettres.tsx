@@ -7,6 +7,7 @@ import LuneDormeuse from '@/assets/illustrations/lune-dormeuse.svg'
 import { Alerte } from '@/components/Alerte'
 import { CarteOuvreQuand, iconeLettre } from '@/components/CarteOuvreQuand'
 import { Ecran } from '@/components/Ecran'
+import { EtatVide } from '@/components/EtatVide'
 import { EnTete } from '@/components/EnTete'
 import { Texte } from '@/components/Texte'
 import { api } from '@/lib/client'
@@ -59,9 +60,10 @@ export default function Lettres() {
       {!cal ? (
         <ActivityIndicator color={couleurs.texte.encre} />
       ) : cal.lettres.length === 0 ? (
-        <Texte variante="manuscritM" style={styles.centre}>
-          Aucune lettre pour l’instant.
-        </Texte>
+        <EtatVide
+          titre="Aucune lettre pour l’instant"
+          texte={`${prenom} peut t’écrire des lettres sans date, à ouvrir au moment voulu.`}
+        />
       ) : (
         <View style={styles.liste}>
           {cal.lettres.map((lettre, i) => {

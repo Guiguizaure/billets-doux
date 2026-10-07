@@ -4,9 +4,10 @@ import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { Platform } from 'react-native'
+import { Platform, StyleSheet, useWindowDimensions, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { BandeauReseau } from '@/components/BandeauReseau'
 import { ChoixProvider } from '@/components/Choix'
 import { DialogueProvider } from '@/components/Dialogue'
 import { fuseauDuTelephone } from '@/lib/fuseau'
@@ -14,6 +15,7 @@ import { enregistrerCetAppareil, useOuvertureDesNotifications } from '@/lib/noti
 import { SessionProvider, useSession } from '@/session/SessionProvider'
 import { fichiersPolices } from '@/theme/polices'
 import { optionsPile } from '@/theme/navigation'
+import { LARGEUR_CADRE, PageDemo } from '@/web/PageDemo'
 
 SplashScreen.preventAutoHideAsync()
 
@@ -24,9 +26,25 @@ SplashScreen.preventAutoHideAsync()
 const chargerPolices =
   Platform.OS === 'web' || Constants.executionEnvironment === ExecutionEnvironment.StoreClient
 
+/** Variante du cadre de la version web, choisie sur la page de test. */
+const VARIANTE_CADRE = 'timbre'
+
+/**
+ * Version web sur grand écran, page principale (pas déjà dans le cadre, pas la page de test) :
+ * on présente l'appli dans un cadre de téléphone.
+ */
+function pageAEncadrer(largeur: number) {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null
+  if (window.self !== window.top || largeur < LARGEUR_CADRE) return null
+  const chemin = `${window.location.pathname}${window.location.search}`
+  return chemin.startsWith('/lab') ? null : chemin
+}
+
 export default function RootLayout() {
   const [policesChargees, erreurPolices] = useFonts(chargerPolices ? fichiersPolices : {})
   const policesPretes = policesChargees || erreurPolices !== null
+  const { width } = useWindowDimensions()
+  const encadre = pageAEncadrer(width)
 
   return (
     <SafeAreaProvider>
@@ -34,7 +52,11 @@ export default function RootLayout() {
         <DialogueProvider>
           <ChoixProvider>
             <StatusBar style="dark" />
-            {policesPretes ? <Navigation /> : null}
+            {!policesPretes ? null : encadre !== null ? (
+              <PageDemo variante={VARIANTE_CADRE} chemin={encadre} />
+            ) : (
+              <Navigation />
+            )}
           </ChoixProvider>
         </DialogueProvider>
       </SessionProvider>
@@ -71,9 +93,18 @@ function Navigation() {
   }, [phase, fuseauCompte, api, appliquer])
 
   return (
-    <Stack screenOptions={optionsPile}>
-      <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
-      <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
-    </Stack>
+    <View style={styles.plein}>
+      <Stack screenOptions={optionsPile}>
+        <Stack.Screen name="lab/glissement" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="lab/fondu" options={{ animation: 'fade' }} />
+      </Stack>
+      <BandeauReseau />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  plein: {
+    flex: 1,
+  },
+})

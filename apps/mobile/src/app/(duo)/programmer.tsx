@@ -26,6 +26,8 @@ import { Segments } from '@/components/Segments'
 import { Texte } from '@/components/Texte'
 import { api } from '@/lib/client'
 import { messageErreur } from '@/lib/formulaires'
+import { messageFlash } from '@/lib/messageFlash'
+import { vibrer } from '@/lib/vibrer'
 import { couleurs, rayons } from '@/theme/tokens'
 
 type Mode = Programmation['mode']
@@ -158,6 +160,13 @@ function Formulaire({
     setEnCours(true)
     try {
       await api.programmer(motId, choix)
+      vibrer.programme()
+      // Le tampon « Programmé pour… » attend sur le calendrier.
+      if (choix.mode === 'date') {
+        messageFlash.deposer(`Programmé pour ${libellesJour(choix.jour).court} à ${heure}`)
+      } else if (choix.mode === 'semaine_hasard') {
+        messageFlash.deposer(`Programmé dans la semaine, à ${heure}`)
+      }
       router.dismissTo(choix.mode === 'ouvre_quand' ? '/ouvre-quand' : '/pour-toi')
     } catch (e) {
       setErreur(messageErreur(e))

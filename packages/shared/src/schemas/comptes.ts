@@ -34,12 +34,25 @@ export const Session = z.object({
 })
 export type Session = z.infer<typeof Session>
 
+/** Les onglets qui ont chacun leur bulle de tutoriel, à la première visite. */
+export const OngletTutoriel = z.enum(['pourMoi', 'pourToi', 'souvenirs', 'nousDeux'])
+export type OngletTutoriel = z.infer<typeof OngletTutoriel>
+
 export const MiseAJourCompte = z.object({
   heureDecouverte: HeureDecouverte.optional(),
   /** Mis à jour tout seul quand le fuseau du téléphone change (voyage, déménagement). */
   fuseauHoraire: z.string().min(1).optional(),
   reglages: z
     .object({ rappelDoux: z.boolean().optional(), indicesVisibles: z.boolean().optional() })
+    .optional(),
+  /** Tutoriel : cartes vues, une bulle d'onglet fermée, plus aucune bulle, ou tout revoir. */
+  tutoriel: z
+    .object({
+      cartesVues: z.literal(true).optional(),
+      bulleVue: OngletTutoriel.optional(),
+      passer: z.literal(true).optional(),
+      revoir: z.literal(true).optional(),
+    })
     .optional(),
 })
 export type MiseAJourCompte = z.infer<typeof MiseAJourCompte>
@@ -53,9 +66,14 @@ export const Moi = z.object({
     heureDecouverte: z.string(),
     /** L'heure a été confirmée (écran 1.3) : on ne le remontre plus. */
     heureConfirmee: z.boolean(),
+    /** Compte du duo de démo (portfolio) : actions irréversibles désactivées. */
+    demo: z.boolean().default(false),
     reglages: z
       .object({ rappelDoux: z.boolean(), indicesVisibles: z.boolean() })
       .default({ rappelDoux: true, indicesVisibles: true }),
+    tutoriel: z
+      .object({ cartesVues: z.boolean(), bullesVues: z.array(OngletTutoriel) })
+      .default({ cartesVues: false, bullesVues: [] }),
   }),
   duo: VueDuo.nullable(),
 })

@@ -4,6 +4,7 @@ import {
   type Inscription,
   type MiseAJourCompte,
   type Moi,
+  OngletTutoriel,
   type Session,
   type VueDuo,
 } from '@billets-doux/shared'
@@ -14,6 +15,7 @@ import { AuthenticationError, LockedAuth, refreshOperation, ValidationError } fr
 import { ErreurMetier } from '@/lib/erreurs'
 import { fuseauValide } from '@/lib/fuseau'
 import { idDe } from '@/lib/ids'
+import { avecReprise } from '@/lib/transaction'
 
 const COMPTE_EXISTANT = 'Un compte existe déjà avec cette adresse.'
 
@@ -70,9 +72,15 @@ export async function connecter(payload: Payload, donnees: Connexion): Promise<S
   }
 }
 
-/** Nouveau jeton pour la session en cours (appelé au lancement de l'appli). */
+/**
+ * Nouveau jeton pour la session en cours (appelé au lancement de l'appli). Deux
+ * rafraîchissements simultanés de la même session écrivent le même document : celui qui perd
+ * le conflit est rejoué.
+ */
 export async function rafraichir(req: PayloadRequest): Promise<Session> {
-  const resultat = await refreshOperation({ collection: req.payload.collections.users, req })
+  const resultat = await avecReprise(req, () =>
+    refreshOperation({ collection: req.payload.collections.users, req }),
+  )
   return { jeton: resultat.refreshedToken, expire: resultat.exp }
 }
 
@@ -113,6 +121,11 @@ export async function vueMoi(req: PayloadRequest, userId: string, origine: strin
       fuseauHoraire: user.fuseauHoraire,
       heureDecouverte: user.heureDecouverte,
       heureConfirmee: Boolean(user.heureConfirmee),
+      demo: Boolean(user.demo),
+      tutoriel: {
+        cartesVues: Boolean(user.tutoriel?.cartesVues),
+        bullesVues: user.tutoriel?.bullesVues ?? [],
+      },
       reglages: {
         rappelDoux: user.reglages?.rappelDoux !== false,
         indicesVisibles: user.reglages?.indicesVisibles !== false,
@@ -130,11 +143,27 @@ export async function mettreAJour(req: PayloadRequest, userId: string, donnees: 
   }
   if (donnees.fuseauHoraire) {
     if (!fuseauValide(donnees.fuseauHoraire)) throw new ErreurMetier(400, 'Fuseau horaire inconnu.')
-    data.fuseauHoraire = donnees.fuseauHoraire
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
+    // Le duo de démo garde son fuseau, d'où que vienne le visiteur.
+    if (!user.demo) data.fuseauHoraire = donnees.fuseauHoraire
   }
   if (donnees.reglages) {
     const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
     data.reglages = { ...user.reglages, ...donnees.reglages }
+  }
+  if (donnees.tutoriel) {
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
+    const { cartesVues = false, bullesVues = [] } = user.tutoriel ?? {}
+    data.tutoriel = donnees.tutoriel.revoir
+      ? { cartesVues: false, bullesVues: [] }
+      : donnees.tutoriel.passer
+        ? { cartesVues: true, bullesVues: [...OngletTutoriel.options] }
+        : {
+            cartesVues: cartesVues || Boolean(donnees.tutoriel.cartesVues),
+            bullesVues: donnees.tutoriel.bulleVue
+              ? [...new Set([...(bullesVues ?? []), donnees.tutoriel.bulleVue])]
+              : (bullesVues ?? []),
+          }
   }
   // Le hook de users recalcule les ouvertures si l'heure ou le fuseau change.
   if (Object.keys(data).length > 0) {

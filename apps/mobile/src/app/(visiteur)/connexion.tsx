@@ -2,7 +2,9 @@ import { Connexion, ErreurApi } from '@billets-doux/shared'
 import { router } from 'expo-router'
 import { useState } from 'react'
 
+import Horloge from '@/assets/icons/Horloge.svg'
 import { Alerte } from '@/components/Alerte'
+import { BandeauInfo } from '@/components/BandeauInfo'
 import { Bouton } from '@/components/Bouton'
 import { BoutonVoir } from '@/components/BoutonVoir'
 import { Champ } from '@/components/Champ'
@@ -16,7 +18,7 @@ import { couleurs } from '@/theme/tokens'
 
 /** Connexion (absente du Figma). */
 export default function EcranConnexion() {
-  const { connecter } = useSession()
+  const { connecter, sessionExpiree } = useSession()
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [visible, setVisible] = useState(false)
@@ -60,6 +62,12 @@ export default function EcranConnexion() {
         </>
       }
     >
+      {sessionExpiree ? (
+        <BandeauInfo
+          Icone={Horloge}
+          message="Ta session a expiré. Reconnecte-toi pour retrouver tes mots."
+        />
+      ) : null}
       <Texte variante="titreL" accessibilityRole="header">
         Te revoilà
       </Texte>

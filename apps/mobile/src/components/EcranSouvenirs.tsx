@@ -8,7 +8,7 @@ import {
 } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useMemo, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 
 import Lecture from '@/assets/icons/Lecture.svg'
 import Livre from '@/assets/icons/Livre.svg'
@@ -22,6 +22,8 @@ import { couleurs, rayons } from '@/theme/tokens'
 
 import { Alerte } from './Alerte'
 import { Bouton } from './Bouton'
+import { EtatVide } from './EtatVide'
+import { CasesFantomes } from './CasesFantomes'
 import { Ecran } from './Ecran'
 import { Onde } from './Onde'
 import { PhotoMedia } from './PhotoMedia'
@@ -36,6 +38,9 @@ const FILTRES: { valeur: Filtre; libelle: string }[] = [
   { valeur: 'vocal', libelle: 'Vocaux' },
   { valeur: 'photo', libelle: 'Photos' },
 ]
+
+/** Les souvenirs s'affichent par paquets : une longue histoire ne ralentit pas l'écran. */
+const PAQUET = 24
 
 const garde = (filtre: Filtre, type: TypeMot) => filtre === 'tout' || filtre === type
 
@@ -59,6 +64,7 @@ export function EcranSouvenirs({
   const [souvenirs, setSouvenirs] = useState<Souvenirs | null>(null)
   const [erreur, setErreur] = useState<string | null>(null)
   const [filtre, setFiltre] = useState<Filtre>('tout')
+  const [affiches, setAffiches] = useState(PAQUET)
   const [etatExport, setExport] = useState<'pret' | 'enCours'>('pret')
 
   useFocusEffect(
@@ -131,7 +137,7 @@ export function EcranSouvenirs({
           </Texte>
           <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
             {total === 0
-              ? 'Les mots ouverts viendront se ranger ici.'
+              ? 'Rien pour l’instant.'
               : `${total} mot${total > 1 ? 's' : ''}${depuis ? ` depuis le ${depuis}` : ''}`}
           </Texte>
         </View>
@@ -145,7 +151,10 @@ export function EcranSouvenirs({
             key={f.valeur}
             libelle={f.libelle}
             active={filtre === f.valeur}
-            onPress={() => setFiltre(f.valeur)}
+            onPress={() => {
+              setFiltre(f.valeur)
+              setAffiches(PAQUET)
+            }}
           />
         ))}
       </View>
@@ -176,11 +185,25 @@ export function EcranSouvenirs({
 
       {!souvenirs ? (
         erreur ? null : (
-          <ActivityIndicator color={couleurs.texte.encre} />
+          <CasesFantomes nombre={4} />
         )
       ) : (
         <>
-          <Mosaique mots={mots} fuseau={fuseau} />
+          {total === 0 && jamais.length === 0 ? (
+            <EtatVide
+              titre="Pas encore de souvenir"
+              texte={`Chaque mot ouvert, le tien comme celui de ${moi?.duo?.partenaire?.prenom ?? 'l’autre'}, viendra se ranger ici.`}
+            />
+          ) : null}
+          <Mosaique mots={mots.slice(0, affiches)} fuseau={fuseau} />
+          {mots.length > affiches ? (
+            <Bouton
+              libelle={`Afficher plus de souvenirs (${mots.length - affiches})`}
+              variante="discret"
+              pleineLargeur
+              onPress={() => setAffiches((n) => n + PAQUET)}
+            />
+          ) : null}
           {mots.length === 0 && total > 0 ? (
             <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
               Rien de ce type pour l’instant.

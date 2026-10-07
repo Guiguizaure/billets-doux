@@ -115,6 +115,7 @@ export interface Config {
     tasks: {
       motsOuvrables: TaskMotsOuvrables;
       rappelDoux: TaskRappelDoux;
+      demoRemiseAZero: TaskDemoRemiseAZero;
       recusPush: TaskRecusPush;
       inline: {
         input: unknown;
@@ -210,6 +211,11 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  tutoriel?: {
+    cartesVues?: boolean | null;
+    bullesVues?: ('pourMoi' | 'pourToi' | 'souvenirs' | 'nousDeux')[] | null;
+  };
+  demo?: ('visiteur' | 'partenaire') | null;
   dernierRappelLe?: string | null;
   essaisCode?: {
     nombre?: number | null;
@@ -407,7 +413,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'motsOuvrables' | 'rappelDoux' | 'recusPush';
+        taskSlug: 'inline' | 'motsOuvrables' | 'rappelDoux' | 'demoRemiseAZero' | 'recusPush';
         taskID: string;
         input?:
           | {
@@ -440,7 +446,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'motsOuvrables' | 'rappelDoux' | 'recusPush') | null;
+  taskSlug?: ('inline' | 'motsOuvrables' | 'rappelDoux' | 'demoRemiseAZero' | 'recusPush') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -591,6 +597,13 @@ export interface UsersSelect<T extends boolean = true> {
         vuLe?: T;
         id?: T;
       };
+  tutoriel?:
+    | T
+    | {
+        cartesVues?: T;
+        bullesVues?: T;
+      };
+  demo?: T;
   dernierRappelLe?: T;
   essaisCode?:
     | T
@@ -834,6 +847,14 @@ export interface TaskMotsOuvrables {
  * via the `definition` "TaskRappelDoux".
  */
 export interface TaskRappelDoux {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskDemoRemiseAZero".
+ */
+export interface TaskDemoRemiseAZero {
   input?: unknown;
   output?: unknown;
 }

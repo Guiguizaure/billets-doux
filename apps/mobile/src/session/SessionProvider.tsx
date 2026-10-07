@@ -18,6 +18,8 @@ import {
 
 import { api, jeton } from '@/lib/client'
 import { retirerCetAppareil } from '@/lib/notifications'
+import { rafraichirSession } from '@/lib/rafraichirSession'
+import { sessionExpiree } from '@/lib/reseau'
 import { stockageJeton } from '@/lib/stockage'
 
 type Etat =
@@ -39,12 +41,16 @@ type Session = {
   retenirCode: (code: string | null) => void
   inscrire: (donnees: Inscription) => Promise<void>
   connecter: (donnees: Connexion) => Promise<void>
+  /** Version web : entre dans le duo de démo (compte de Léo), sans mot de passe. */
+  connecterDemo: () => Promise<void>
   deconnecter: () => Promise<void>
   /** Remplace la vue « moi » par celle renvoyée par une route de l'API. */
   appliquer: (moi: Moi) => void
   /** Relit la vue « moi » (ex. : la personne invitée vient de rejoindre). */
   actualiser: () => Promise<void>
   reessayer: () => void
+  /** La session vient d'expirer : l'accueil et la connexion le disent. */
+  sessionExpiree: boolean
 }
 
 const Contexte = createContext<Session | null>(null)
@@ -64,7 +70,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [tentative])
 
+  const [expiree, setExpiree] = useState(false)
+
   const ouvrir = useCallback(async (session: JetonSession) => {
+    setExpiree(false)
     jeton.definir(session.jeton)
     await stockageJeton.ecrire(session.jeton)
     setEtat({ statut: 'connecte', moi: await api.moi() })
@@ -75,6 +84,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await stockageJeton.effacer()
     setEtat({ statut: 'visiteur' })
   }, [])
+
+  // Un appel refusé (jeton expiré ou révoqué) ferme la session, avec un message clair.
+  useEffect(
+    () =>
+      sessionExpiree.ecouter(() => {
+        if (!jeton.lire()) return
+        setExpiree(true)
+        void oublier()
+      }),
+    [oublier],
+  )
 
   const actualiser = useCallback(async () => {
     try {
@@ -100,6 +120,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     async (donnees: Connexion) => ouvrir(await api.connexion(donnees)),
     [ouvrir],
   )
+  const connecterDemo = useCallback(async () => ouvrir(await api.connexionDemo()), [ouvrir])
   const deconnecter = useCallback(async () => {
     // Avant de fermer la session : cet appareil ne reçoit plus les notifications du compte.
     await retirerCetAppareil()
@@ -117,12 +138,25 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       retenirCode,
       inscrire,
       connecter,
+      connecterDemo,
       deconnecter,
       appliquer,
       actualiser,
       reessayer,
+      sessionExpiree: expiree,
     }
-  }, [etat, codeEnAttente, inscrire, connecter, deconnecter, appliquer, actualiser, reessayer])
+  }, [
+    etat,
+    codeEnAttente,
+    inscrire,
+    connecter,
+    connecterDemo,
+    deconnecter,
+    appliquer,
+    actualiser,
+    reessayer,
+    expiree,
+  ])
 
   return <Contexte value={valeur}>{children}</Contexte>
 }
@@ -139,22 +173,33 @@ function phaseDe(etat: Etat): Phase {
   return duo && (duo.statut === 'actif' || duo.statut === 'pause') ? 'duo' : 'sansDuo'
 }
 
-/** Au lancement : reprend le jeton enregistré, le prolonge et charge le compte. */
+/** Une vraie session expirée ou révoquée : la seule raison de déconnecter. */
+const estExpiree = (e: unknown) => e instanceof ErreurApi && e.statut === 401
+
+/**
+ * Au lancement : reprend le jeton enregistré, le prolonge et charge le compte. Si le
+ * rafraîchissement échoue pour une autre raison (serveur, réseau), le jeton actuel, encore
+ * valable, suffit : on charge le compte avec.
+ */
 async function demarrer(): Promise<Etat> {
   const enregistre = await stockageJeton.lire()
   if (!enregistre) return { statut: 'visiteur' }
   jeton.definir(enregistre)
   try {
-    const session = await api.rafraichir()
-    jeton.definir(session.jeton)
-    await stockageJeton.ecrire(session.jeton)
+    await rafraichirSession()
+  } catch (e) {
+    if (estExpiree(e)) return oublierAuDemarrage()
+  }
+  try {
     return { statut: 'connecte', moi: await api.moi() }
   } catch (e) {
-    if (e instanceof ErreurApi && e.statut === 401) {
-      jeton.definir(null)
-      await stockageJeton.effacer()
-      return { statut: 'visiteur' }
-    }
+    if (estExpiree(e)) return oublierAuDemarrage()
     return { statut: 'horsLigne' }
   }
+}
+
+async function oublierAuDemarrage(): Promise<Etat> {
+  jeton.definir(null)
+  await stockageJeton.effacer()
+  return { statut: 'visiteur' }
 }

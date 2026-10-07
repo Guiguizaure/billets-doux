@@ -129,12 +129,18 @@ function Dialogue({
                   libelle={demande.annuler ?? 'Annuler'}
                   variante="secondaire"
                   pleineLargeur
+                  compact
                   ref={annuler}
                   onPress={() => onRepondre(false)}
                 />
               </View>
               <View style={styles.bouton}>
-                <Bouton libelle={demande.action} pleineLargeur onPress={() => onRepondre(true)} />
+                <Bouton
+                  libelle={demande.action}
+                  pleineLargeur
+                  compact
+                  onPress={() => onRepondre(true)}
+                />
               </View>
             </View>
           </View>

@@ -15,6 +15,7 @@ import { Users } from './collections/Users'
 import { comptesEndpoints } from './endpoints/comptes'
 import { health } from './endpoints/health'
 import { souvenirsEndpoints } from './endpoints/souvenirs'
+import { creerDemo } from './services/demo'
 import { releverRecus } from './services/notifications'
 import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
 
@@ -72,6 +73,15 @@ export default buildConfig({
         slug: 'rappelDoux',
         schedule: [{ cron: '*/15 * * * *', queue: 'minute' }],
         handler: async ({ req }) => ({ output: { rappeles: await rappelerAuteurs(req.payload) } }),
+      },
+      {
+        // Le duo de démo revient à l'identique chaque nuit (4 h à Paris l'hiver, 5 h l'été).
+        slug: 'demoRemiseAZero',
+        schedule: [{ cron: '0 3 * * *', queue: 'minute' }],
+        handler: async ({ req }) => {
+          if (!process.env.DEMO_MOT_DE_PASSE) return { output: { mots: 0 } }
+          return { output: { mots: (await creerDemo(req.payload)).mots } }
+        },
       },
       {
         slug: 'recusPush',

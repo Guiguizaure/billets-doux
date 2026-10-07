@@ -15,6 +15,8 @@ type Props = {
   /** Action en cours : le bouton est désactivé et affiche une roue. */
   enCours?: boolean
   pleineLargeur?: boolean
+  /** Deux boutons côte à côte : marges réduites pour que le libellé tienne à 360 dp. */
+  compact?: boolean
   accessibilityHint?: string
   /** Pour donner le focus au bouton (ex. : « Annuler » à l'ouverture d'un dialogue). */
   ref?: Ref<View>
@@ -29,6 +31,7 @@ export function Bouton({
   desactive,
   enCours,
   pleineLargeur,
+  compact,
   accessibilityHint,
   ref,
 }: Props) {
@@ -47,6 +50,7 @@ export function Bouton({
         styles.base,
         styles[variante],
         pleineLargeur && styles.pleineLargeur,
+        compact && styles.compact,
         (pressed || inactif) && styles.presse,
       ]}
     >
@@ -82,6 +86,9 @@ const styles = StyleSheet.create({
   discret: {},
   pleineLargeur: {
     alignSelf: 'stretch',
+  },
+  compact: {
+    paddingHorizontal: 14,
   },
   presse: {
     opacity: 0.7,

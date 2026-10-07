@@ -9,7 +9,7 @@ import {
 } from '@billets-doux/shared'
 import { router, useFocusEffect } from 'expo-router'
 import { useCallback, useState } from 'react'
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 
 import Calendrier from '@/assets/icons/Calendrier.svg'
 import Cloche from '@/assets/icons/Cloche.svg'
@@ -19,17 +19,21 @@ import Sablier from '@/assets/icons/Sablier.svg'
 import Suivant from '@/assets/icons/Suivant.svg'
 import Surprise from '@/assets/icons/Surprise.svg'
 import EnveloppeCachet from '@/assets/illustrations/enveloppe-cachet.svg'
+import OiseauMessager from '@/assets/illustrations/oiseau-messager.svg'
 import TimbreLune from '@/assets/illustrations/timbre-lune.svg'
 import { Alerte } from '@/components/Alerte'
 import { BandeauPause } from '@/components/BandeauPause'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
+import { CasesFantomes } from '@/components/CasesFantomes'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
+import { EtatVide } from '@/components/EtatVide'
 import { useConfirmer } from '@/components/Dialogue'
 import { Feuille } from '@/components/Feuille'
 import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
+import { useCible } from '@/components/Tutoriel'
 import {
   type CaseJour,
   construireCasesRecues,
@@ -81,6 +85,9 @@ export default function PourMoi() {
   const [scellee, setScellee] = useState<CaseRecue | null>(null)
   const confirmer = useConfirmer()
   const [notifications, setNotifications] = useState<EtatNotifications | null>(null)
+  // Visés par la visite guidée de la démo.
+  const cibleTitre = useCible('titre')
+  const cibleCase = useCible('caseScellee')
 
   useFocusEffect(
     useCallback(() => {
@@ -112,11 +119,7 @@ export default function PourMoi() {
   )
 
   if (!cal) {
-    return (
-      <Ecran bas={false}>
-        {erreur ? <Alerte message={erreur} /> : <ActivityIndicator color={couleurs.texte.encre} />}
-      </Ecran>
-    )
+    return <Ecran bas={false}>{erreur ? <Alerte message={erreur} /> : <CasesFantomes />}</Ecran>
   }
 
   const prenom = cal.expediteur.prenom
@@ -148,11 +151,14 @@ export default function PourMoi() {
     else setScellee(kase)
   }
 
+  // Rien encore de l'autre : ni case, ni surprise, ni lettre.
+  const vide = cal.cases.length === 0 && cal.surprises === 0 && cal.lettres.length === 0
   const lettresFermees = cal.lettres.filter((l) => l.etat === 'scelle').length
+  const premiereScellee = cases.find((c) => c.etat === 'scelle')?.jour
 
   return (
     <Ecran bas={false}>
-      <View style={styles.titre}>
+      <View ref={cibleTitre} style={styles.titre}>
         <View style={styles.titreTexte}>
           <Texte variante="labelS" couleur={couleurs.texte.encreDouce}>
             {libellesJour(cal.aujourdhui).long.toUpperCase()}
@@ -182,16 +188,18 @@ export default function PourMoi() {
         />
       ) : null}
 
-      <View style={styles.periodes} accessibilityRole="radiogroup" accessibilityLabel="Période">
-        {periodes.map((p) => (
-          <Puce
-            key={p.cle}
-            libelle={p.libelle}
-            active={p.cle === periode?.cle}
-            onPress={() => setPeriodeChoisie(p.cle)}
-          />
-        ))}
-      </View>
+      {vide ? null : (
+        <View style={styles.periodes} accessibilityRole="radiogroup" accessibilityLabel="Période">
+          {periodes.map((p) => (
+            <Puce
+              key={p.cle}
+              libelle={p.libelle}
+              active={p.cle === periode?.cle}
+              onPress={() => setPeriodeChoisie(p.cle)}
+            />
+          ))}
+        </View>
+      )}
 
       {erreur ? <Alerte message={erreur} /> : null}
 
@@ -220,20 +228,33 @@ export default function PourMoi() {
         </View>
       ) : null}
 
-      <View style={styles.cases}>
-        {cases.map((c) => (
-          <Case
-            key={c.jour}
-            etat={ETAT_CASE[c.etat]}
-            jourSemaine={c.titre}
-            jour={c.chiffre}
-            info={c.info}
-            Icone={c.mots[0] ? TYPES_DE_MOT[c.mots[0].type].Icone : undefined}
-            libelleAccessible={c.libelleAccessible}
-            onPress={c.etat === 'vide' ? undefined : () => toucher(c)}
-          />
-        ))}
-      </View>
+      {vide ? (
+        <EtatVide
+          illustration={<OiseauMessager width={144} height={120} />}
+          titre="Le calendrier se remplit bientôt"
+          texte={`Les mots de ${prenom} apparaîtront ici, case par case. Tu verras le jour, jamais le contenu avant l’heure.`}
+        />
+      ) : (
+        <View style={styles.cases}>
+          {cases.map((c) => (
+            <View
+              key={c.jour}
+              ref={c.jour === premiereScellee ? cibleCase : undefined}
+              collapsable={false}
+            >
+              <Case
+                etat={ETAT_CASE[c.etat]}
+                jourSemaine={c.titre}
+                jour={c.chiffre}
+                info={c.info}
+                Icone={c.mots[0] ? TYPES_DE_MOT[c.mots[0].type].Icone : undefined}
+                libelleAccessible={c.libelleAccessible}
+                onPress={c.etat === 'vide' ? undefined : () => toucher(c)}
+              />
+            </View>
+          ))}
+        </View>
+      )}
 
       {cal.lettres.length > 0 ? (
         <Pressable
@@ -308,12 +329,19 @@ function CarteNotifications({
       </View>
       <View style={styles.encartBoutons}>
         <View style={styles.flex}>
-          <Bouton libelle="Plus tard" variante="secondaire" pleineLargeur onPress={onPlusTard} />
+          <Bouton
+            libelle="Plus tard"
+            variante="secondaire"
+            pleineLargeur
+            compact
+            onPress={onPlusTard}
+          />
         </View>
         <View style={styles.flex}>
           <Bouton
             libelle={bloque ? 'Réglages' : 'Activer'}
             pleineLargeur
+            compact
             onPress={() => void onActiver()}
           />
         </View>
