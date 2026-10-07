@@ -73,6 +73,18 @@ export function endpointPublic(hoteRequete?: string | null) {
   return url.origin
 }
 
+/**
+ * Dossier privé des sauvegardes de la base (empreintes des mots de passe comprises) : aucune
+ * URL signée ne doit jamais y mener, ni pour lire ni pour écrire.
+ */
+export const PREFIXE_SAUVEGARDES = 'sauvegardes/'
+
+function exigerCleSignable(cle: string) {
+  if (cle.startsWith(PREFIXE_SAUVEGARDES) || cle.includes('..')) {
+    throw new Error(`Clé non signable : ${cle}`)
+  }
+}
+
 /** URL d'envoi : le type et la taille exacts font partie de la signature. */
 export async function urlEnvoi(options: {
   cle: string
@@ -80,6 +92,7 @@ export async function urlEnvoi(options: {
   taille: number
   hote?: string | null
 }) {
+  exigerCleSignable(options.cle)
   const { bucket } = config()
   const url = await getSignedUrl(
     client(endpointPublic(options.hote)),
@@ -96,6 +109,7 @@ export async function urlEnvoi(options: {
 
 /** URL de lecture valable quelques minutes. */
 export async function urlLecture(options: { cle: string; hote?: string | null }) {
+  exigerCleSignable(options.cle)
   const { bucket } = config()
   const url = await getSignedUrl(
     client(endpointPublic(options.hote)),
@@ -150,6 +164,7 @@ export async function urlTelechargement(options: {
   nomFichier: string
   hote?: string | null
 }) {
+  exigerCleSignable(options.cle)
   const { bucket } = config()
   const url = await getSignedUrl(
     client(endpointPublic(options.hote)),
@@ -163,15 +178,44 @@ export async function urlTelechargement(options: {
   return { url, expire: new Date(Date.now() + DUREE_LECTURE_S * 2000).toISOString() }
 }
 
+/** Les clés sous un préfixe (toutes les pages de la liste). */
+export async function listerCles(prefixe: string) {
+  const c = config()
+  const cles: string[] = []
+  let suite: string | undefined
+  do {
+    const page = await client(c.endpoint).send(
+      new ListObjectsV2Command({ Bucket: c.bucket, Prefix: prefixe, ContinuationToken: suite }),
+    )
+    for (const objet of page.Contents ?? []) if (objet.Key) cles.push(objet.Key)
+    suite = page.IsTruncated ? page.NextContinuationToken : undefined
+  } while (suite)
+  return cles
+}
+
+/** Les « dossiers » directement sous un préfixe (« sauvegardes/2026-10-08T03-30-00Z/ »…). */
+export async function listerDossiers(prefixe: string) {
+  const c = config()
+  const dossiers: string[] = []
+  let suite: string | undefined
+  do {
+    const page = await client(c.endpoint).send(
+      new ListObjectsV2Command({
+        Bucket: c.bucket,
+        Prefix: prefixe,
+        Delimiter: '/',
+        ContinuationToken: suite,
+      }),
+    )
+    for (const p of page.CommonPrefixes ?? []) if (p.Prefix) dossiers.push(p.Prefix)
+    suite = page.IsTruncated ? page.NextContinuationToken : undefined
+  } while (suite)
+  return dossiers
+}
+
 /** Supprime tous les fichiers sous un préfixe (« exports/<compte>/ »). */
 export async function supprimerPrefixe(prefixe: string) {
-  const c = config()
-  const { Contents } = await client(c.endpoint).send(
-    new ListObjectsV2Command({ Bucket: c.bucket, Prefix: prefixe }),
-  )
-  for (const objet of Contents ?? []) {
-    if (objet.Key) await supprimer(objet.Key)
-  }
+  for (const cle of await listerCles(prefixe)) await supprimer(cle)
 }
 
 /** Crée le bucket s'il manque et autorise les envois depuis la version web (CORS). */

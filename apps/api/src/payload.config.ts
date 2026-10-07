@@ -18,6 +18,7 @@ import { souvenirsEndpoints } from './endpoints/souvenirs'
 import { creerDemo } from './services/demo'
 import { releverRecus } from './services/notifications'
 import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
+import { sauvegarder } from './services/sauvegarde'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -81,6 +82,16 @@ export default buildConfig({
         handler: async ({ req }) => {
           if (!process.env.DEMO_MOT_DE_PASSE) return { output: { mots: 0 } }
           return { output: { mots: (await creerDemo(req.payload)).mots } }
+        },
+      },
+      {
+        // Sauvegarde de la base vers le dossier privé du bucket, 14 gardées (Atlas gratuit
+        // n'en fait pas). Après la remise à zéro de la démo.
+        slug: 'sauvegardeNocturne',
+        schedule: [{ cron: '30 3 * * *', queue: 'minute' }],
+        handler: async ({ req }) => {
+          const { nom, supprimees } = await sauvegarder(req.payload)
+          return { output: { nom, supprimees: supprimees.length } }
         },
       },
       {

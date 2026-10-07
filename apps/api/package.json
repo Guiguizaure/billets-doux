@@ -15,7 +15,9 @@
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "stockage:preparer": "node scripts/preparer-stockage.ts",
     "demo:creer": "tsx scripts/creer-demo.mts",
-    "admin:creer": "tsx scripts/creer-admin.mts"
+    "admin:creer": "tsx scripts/creer-admin.mts",
+    "sauvegarde:faire": "tsx scripts/sauvegarde.mts faire",
+    "sauvegarde:restaurer": "tsx scripts/sauvegarde.mts restaurer"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
