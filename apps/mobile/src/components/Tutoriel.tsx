@@ -318,13 +318,7 @@ function Calque({
     const dessus = cadre.y + cadre.h / 2 > h / 2
     contenu = (
       <>
-        <View
-          pointerEvents="none"
-          style={[
-            styles.anneau,
-            { left: cadre.x - 4, top: cadre.y - 4, width: cadre.l + 8, height: cadre.h + 8 },
-          ]}
-        />
+        <View pointerEvents="none" style={[styles.anneau, anneau(cadre, l, h)]} />
         <View
           style={[
             styles.place,
@@ -349,6 +343,18 @@ function Calque({
       {contenu}
     </View>
   )
+}
+
+/** L'anneau déborde de 4 px autour de l'élément, sans sortir de l'écran (onglet du bord). */
+function anneau(cadre: Cadre, l: number, h: number) {
+  const gauche = Math.max(2, cadre.x - 4)
+  const haut = Math.max(2, cadre.y - 4)
+  return {
+    left: gauche,
+    top: haut,
+    width: Math.min(l - 2, cadre.x + cadre.l + 4) - gauche,
+    height: Math.min(h - 2, cadre.y + cadre.h + 4) - haut,
+  }
 }
 
 const styles = StyleSheet.create({
