@@ -17,6 +17,8 @@ export const Inscription = z.object({
     .min(8, 'Le mot de passe doit faire au moins 8 caractères.')
     .max(128, 'Le mot de passe doit faire 128 caractères au plus.'),
   fuseauHoraire: z.string().min(1),
+  /** Case « J'ai 18 ans ou plus » : Billets doux est réservé aux majeurs. */
+  majeur: z.literal(true, { error: 'Billets doux est réservé aux personnes de 18 ans et plus.' }),
 })
 export type Inscription = z.infer<typeof Inscription>
 

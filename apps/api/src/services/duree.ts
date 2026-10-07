@@ -13,7 +13,14 @@ import { AuthenticationError, LockedAuth, type Payload, type PayloadRequest } fr
 
 import { ErreurMetier } from '@/lib/erreurs'
 import { idDe } from '@/lib/ids'
-import { deposerFichier, lireFichier, supprimerPrefixe, urlTelechargement } from '@/lib/stockage'
+import {
+  deposerFichier,
+  lireFichier,
+  listerCles,
+  supprimer,
+  supprimerPrefixe,
+  urlTelechargement,
+} from '@/lib/stockage'
 
 import { vuePause } from './comptes'
 import { exigerHorsDemo } from './demo'
@@ -302,6 +309,26 @@ const EXTENSIONS: Record<string, string> = { 'image/jpeg': 'jpg', 'audio/mp4': '
  * photos et vocaux. Seulement ce que l'utilisateur a le droit de lire : les mots ouverts
  * dans les deux sens, les réponses, et ses propres mots jamais envoyés.
  */
+/** Une archive d'export reste 24 heures dans le stockage (politique de confidentialité). */
+export const DUREE_EXPORT_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Tâche de la nuit : supprime les archives d'export de plus de 24 heures. Leur nom est
+ * l'instant de leur création (`exports/<compte>/<millisecondes>.zip`).
+ */
+export async function supprimerExportsAnciens(maintenant = new Date()) {
+  const limite = maintenant.getTime() - DUREE_EXPORT_MS
+  let supprimes = 0
+  for (const cle of await listerCles('exports/')) {
+    const creation = Number(cle.match(/\/(\d+)\.zip$/)?.[1])
+    if (Number.isFinite(creation) && creation < limite) {
+      await supprimer(cle)
+      supprimes++
+    }
+  }
+  return supprimes
+}
+
 export async function exporter(req: PayloadRequest, userId: string, hote: string | null) {
   const { payload } = req
   const moi = await payload.findByID({ collection: 'users', id: userId, depth: 0, req })

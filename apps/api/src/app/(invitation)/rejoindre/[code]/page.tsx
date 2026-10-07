@@ -10,7 +10,8 @@ type Props = { params: Promise<{ code: string }> }
 
 /**
  * Page ouverte par le lien d'invitation. Elle propose d'ouvrir l'appli
- * (billetsdoux://rejoindre?code=…) ou la version web, et rappelle le code.
+ * (billetsdoux://rejoindre?code=…, ou billetsdoux-dev:// pour l'appli de développement, selon
+ * `APP_SCHEME`) ou la version web, et rappelle le code.
  */
 export default async function Invitation({ params }: Props) {
   const code = normaliserCode(decodeURIComponent((await params).code))
@@ -45,7 +46,7 @@ export default async function Invitation({ params }: Props) {
         <div className="label">TON CODE D’INVITATION</div>
         <div className="code">{formaterCode(code)}</div>
       </div>
-      <a className="bouton principal" href={`billetsdoux://rejoindre?code=${code}`}>
+      <a className="bouton principal" href={`${schemaAppli()}://rejoindre?code=${code}`}>
         Ouvrir dans l’appli
       </a>
       <a className="bouton secondaire" href={`${web}/rejoindre?code=${code}`}>
@@ -53,6 +54,11 @@ export default async function Invitation({ params }: Props) {
       </a>
     </main>
   )
+}
+
+/** Schéma de lien de l'appli servie par cette API : production par défaut. */
+function schemaAppli() {
+  return process.env.APP_SCHEME || 'billetsdoux'
 }
 
 /** Version web de l'appli : `WEB_URL` si défini, sinon le même hôte sur le port d'Expo (dev). */

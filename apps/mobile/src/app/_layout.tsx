@@ -29,6 +29,9 @@ const chargerPolices =
 /** Variante du cadre de la version web, choisie sur la page de test. */
 const VARIANTE_CADRE = 'timbre'
 
+/** Pages à lire en pleine page : la page de test et les pages légales (liens des stores). */
+const PAGES_SANS_CADRE = ['/lab', '/confidentialite', '/mentions-legales', '/supprimer-mon-compte']
+
 /**
  * Version web sur grand écran, page principale (pas déjà dans le cadre, pas la page de test) :
  * on présente l'appli dans un cadre de téléphone.
@@ -37,7 +40,7 @@ function pageAEncadrer(largeur: number) {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return null
   if (window.self !== window.top || largeur < LARGEUR_CADRE) return null
   const chemin = `${window.location.pathname}${window.location.search}`
-  return chemin.startsWith('/lab') ? null : chemin
+  return PAGES_SANS_CADRE.some((page) => chemin.startsWith(page)) ? null : chemin
 }
 
 export default function RootLayout() {

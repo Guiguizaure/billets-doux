@@ -42,9 +42,27 @@ describe('inscription', () => {
       email: ' Lina@Exemple.FR ',
       motDePasse: '12345678',
       fuseauHoraire: 'Europe/Paris',
+      majeur: true,
     })
     expect(r.prenom).toBe('Lina')
     expect(r.email).toBe('lina@exemple.fr')
+  })
+
+  it('refuse une inscription sans la case « J’ai 18 ans ou plus »', () => {
+    const base = {
+      prenom: 'Léo',
+      email: 'leo@exemple.fr',
+      motDePasse: '12345678',
+      fuseauHoraire: 'Europe/Paris',
+    }
+    for (const majeur of [undefined, false]) {
+      const r = Inscription.safeParse({ ...base, majeur })
+      expect(r.success).toBe(false)
+      expect(r.error?.issues[0]).toMatchObject({
+        path: ['majeur'],
+        message: 'Billets doux est réservé aux personnes de 18 ans et plus.',
+      })
+    }
   })
 
   it('refuse un mot de passe trop court, avec un message en français', () => {
@@ -53,6 +71,7 @@ describe('inscription', () => {
       email: 'leo@exemple.fr',
       motDePasse: 'court',
       fuseauHoraire: 'Europe/Paris',
+      majeur: true,
     })
     expect(r.success).toBe(false)
     expect(r.error?.issues[0]?.message).toMatch(/au moins 8 caractères/)

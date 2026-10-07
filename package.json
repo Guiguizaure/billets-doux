@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@11.3.0",
   "engines": {
-    "node": ">=22"
+    "node": "24.21.0"
   },
   "scripts": {
     "db:up": "docker compose up -d --wait mongo s3 && pnpm --filter @billets-doux/api stockage:preparer",
@@ -14,7 +14,10 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "build": "pnpm -r build",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "verifier:prod": "node scripts/verifier-prod.mjs",
+    "heroku-postbuild": "pnpm --filter @billets-doux/api build",
+    "heroku-cleanup": "if [ -n \"$STACK\" ]; then rm -rf node_modules apps/*/node_modules packages/*/node_modules apps/mobile apps/api/.next/cache; else echo 'heroku-cleanup ne tourne que pendant un build Heroku : rien supprimé.'; fi"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

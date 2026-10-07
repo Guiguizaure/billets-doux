@@ -116,6 +116,8 @@ export interface Config {
       motsOuvrables: TaskMotsOuvrables;
       rappelDoux: TaskRappelDoux;
       demoRemiseAZero: TaskDemoRemiseAZero;
+      sauvegardeNocturne: TaskSauvegardeNocturne;
+      exportsExpires: TaskExportsExpires;
       recusPush: TaskRecusPush;
       inline: {
         input: unknown;
@@ -413,7 +415,14 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'motsOuvrables' | 'rappelDoux' | 'demoRemiseAZero' | 'recusPush';
+        taskSlug:
+          | 'inline'
+          | 'motsOuvrables'
+          | 'rappelDoux'
+          | 'demoRemiseAZero'
+          | 'sauvegardeNocturne'
+          | 'exportsExpires'
+          | 'recusPush';
         taskID: string;
         input?:
           | {
@@ -446,7 +455,17 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'motsOuvrables' | 'rappelDoux' | 'demoRemiseAZero' | 'recusPush') | null;
+  taskSlug?:
+    | (
+        | 'inline'
+        | 'motsOuvrables'
+        | 'rappelDoux'
+        | 'demoRemiseAZero'
+        | 'sauvegardeNocturne'
+        | 'exportsExpires'
+        | 'recusPush'
+      )
+    | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -855,6 +874,22 @@ export interface TaskRappelDoux {
  * via the `definition` "TaskDemoRemiseAZero".
  */
 export interface TaskDemoRemiseAZero {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSauvegardeNocturne".
+ */
+export interface TaskSauvegardeNocturne {
+  input?: unknown;
+  output?: unknown;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskExportsExpires".
+ */
+export interface TaskExportsExpires {
   input?: unknown;
   output?: unknown;
 }

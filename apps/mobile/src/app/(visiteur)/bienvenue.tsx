@@ -93,6 +93,8 @@ export default function Bienvenue() {
             </View>
           ))}
         </View>
+        <LienTexte libelle="Confidentialité" onPress={() => router.push('/confidentialite')} />
+        <LienTexte libelle="Mentions légales" onPress={() => router.push('/mentions-legales')} />
         {__DEV__ ? (
           <LienTexte libelle="Page de test (développement)" onPress={() => router.push('/lab')} />
         ) : null}

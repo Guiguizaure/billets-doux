@@ -2,7 +2,13 @@ import { strFromU8, unzipSync } from 'fflate'
 import type { Payload } from 'payload'
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { decrire, preparerBucket } from '@/lib/stockage'
+import {
+  decrire,
+  deposerFichier,
+  listerCles,
+  preparerBucket,
+  supprimerPrefixe,
+} from '@/lib/stockage'
 import { vueMoi } from '@/services/comptes'
 import {
   exporter,
@@ -13,6 +19,7 @@ import {
   reprendre,
   souvenirs,
   supprimerCompte,
+  supprimerExportsAnciens,
 } from '@/services/duree'
 import { inviter, rejoindre } from '@/services/duos'
 import { confirmer, demanderTeleversement, lecture } from '@/services/medias'
@@ -299,6 +306,20 @@ describe('export', () => {
     const medias = Object.keys(archive).filter((f) => f.startsWith('medias/'))
     expect(medias).toHaveLength(1)
     expect(Array.from(archive[medias[0]!]!)).toEqual([1, 2, 3, 4, 5])
+  })
+})
+
+describe('archives d’export', () => {
+  it('celles de plus de 24 heures sont supprimées la nuit, pas les plus récentes', async () => {
+    await supprimerPrefixe('exports/')
+    const maintenant = new Date('2026-10-08T03:45:00Z')
+    const il_y_a = (heures: number) => maintenant.getTime() - heures * 3_600_000
+    const zip = new Uint8Array([1])
+    await deposerFichier(`exports/lina/${il_y_a(25)}.zip`, zip, 'application/zip')
+    await deposerFichier(`exports/leo/${il_y_a(23)}.zip`, zip, 'application/zip')
+    expect(await supprimerExportsAnciens(maintenant)).toBe(1)
+    expect(await listerCles('exports/')).toEqual([`exports/leo/${il_y_a(23)}.zip`])
+    await supprimerPrefixe('exports/')
   })
 })
 

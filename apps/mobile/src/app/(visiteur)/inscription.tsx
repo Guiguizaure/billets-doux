@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { Alerte } from '@/components/Alerte'
 import { Bouton } from '@/components/Bouton'
+import { CaseACocher } from '@/components/CaseACocher'
 import { BoutonVoir } from '@/components/BoutonVoir'
 import { Champ } from '@/components/Champ'
 import { Ecran } from '@/components/Ecran'
@@ -15,13 +16,14 @@ import { fuseauDuTelephone } from '@/lib/fuseau'
 import { useSession } from '@/session/SessionProvider'
 import { couleurs } from '@/theme/tokens'
 
-/** Inscription (absente du Figma) : prénom, e-mail, mot de passe. */
+/** Inscription (absente du Figma) : prénom, e-mail, mot de passe, « J'ai 18 ans ou plus ». */
 export default function EcranInscription() {
   const { inscrire, codeEnAttente } = useSession()
   const [prenom, setPrenom] = useState('')
   const [email, setEmail] = useState('')
   const [motDePasse, setMotDePasse] = useState('')
   const [visible, setVisible] = useState(false)
+  const [majeur, setMajeur] = useState(false)
   const [erreurs, setErreurs] = useState<Record<string, string>>({})
   const [erreur, setErreur] = useState<string | null>(null)
   const [enCours, setEnCours] = useState(false)
@@ -32,6 +34,7 @@ export default function EcranInscription() {
       email,
       motDePasse,
       fuseauHoraire: fuseauDuTelephone(),
+      majeur,
     })
     if (!saisie.success) {
       setErreurs(erreursParChamp(saisie.error))
@@ -121,6 +124,15 @@ export default function EcranInscription() {
         returnKeyType="done"
         onSubmitEditing={() => void envoyer()}
         accessoire={<BoutonVoir visible={visible} basculer={() => setVisible(!visible)} />}
+      />
+      <CaseACocher
+        libelle="J’ai 18 ans ou plus"
+        coche={majeur}
+        onChange={(coche) => {
+          setMajeur(coche)
+          setErreurs((e) => sansErreur(e, 'majeur'))
+        }}
+        erreur={erreurs.majeur}
       />
     </Ecran>
   )

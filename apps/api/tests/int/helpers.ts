@@ -32,6 +32,7 @@ export async function nouvelUtilisateur(payload: Payload, prenom: string) {
     email,
     motDePasse: MOT_DE_PASSE,
     fuseauHoraire: 'Europe/Paris',
+    majeur: true,
   })
   const { docs } = await payload.find({ collection: 'users', where: { email: { equals: email } } })
   const user = docs[0]
