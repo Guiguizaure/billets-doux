@@ -114,6 +114,13 @@ export async function creerDemo(payload: Payload, maintenant = new Date()) {
       heureDecouverte: DEMO.heure,
       heureConfirmee: true,
       reglages: { rappelDoux: true, indicesVisibles: true },
+      // La démo a sa propre visite guidée : ni cartes ni bulles des vrais comptes.
+      tutoriel: {
+        cartesVues: true,
+        bullesVues: ['pourMoi', 'pourToi', 'souvenirs', 'nousDeux'] as (
+          'pourMoi' | 'pourToi' | 'souvenirs' | 'nousDeux'
+        )[],
+      },
       appareils: [],
       dernierJokerLe: null,
       dernierRappelLe: null,

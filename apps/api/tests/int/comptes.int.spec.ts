@@ -99,3 +99,28 @@ describe('accès direct aux collections', () => {
     ).rejects.toThrow()
   })
 })
+
+describe('tutoriel', () => {
+  it('les cartes et chaque bulle d’onglet ne reviennent pas une fois vues ; « Revoir » efface tout', async () => {
+    const { id } = await nouvelUtilisateur(payload, 'Camille')
+    const tutoriel = async () =>
+      (await vueMoi(await requete(payload), id, 'http://api')).utilisateur.tutoriel
+    expect(await tutoriel()).toEqual({ cartesVues: false, bullesVues: [] })
+
+    await mettreAJour(await requete(payload), id, { tutoriel: { cartesVues: true } })
+    await mettreAJour(await requete(payload), id, { tutoriel: { bulleVue: 'pourMoi' } })
+    await mettreAJour(await requete(payload), id, { tutoriel: { bulleVue: 'pourMoi' } })
+    await mettreAJour(await requete(payload), id, { tutoriel: { bulleVue: 'souvenirs' } })
+    expect(await tutoriel()).toEqual({ cartesVues: true, bullesVues: ['pourMoi', 'souvenirs'] })
+
+    await mettreAJour(await requete(payload), id, { tutoriel: { revoir: true } })
+    expect(await tutoriel()).toEqual({ cartesVues: false, bullesVues: [] })
+
+    // « Passer » sur une bulle : plus aucune bulle.
+    await mettreAJour(await requete(payload), id, { tutoriel: { passer: true } })
+    expect(await tutoriel()).toEqual({
+      cartesVues: true,
+      bullesVues: ['pourMoi', 'pourToi', 'souvenirs', 'nousDeux'],
+    })
+  })
+})

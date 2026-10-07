@@ -4,6 +4,7 @@ import {
   type Inscription,
   type MiseAJourCompte,
   type Moi,
+  OngletTutoriel,
   type Session,
   type VueDuo,
 } from '@billets-doux/shared'
@@ -114,6 +115,10 @@ export async function vueMoi(req: PayloadRequest, userId: string, origine: strin
       heureDecouverte: user.heureDecouverte,
       heureConfirmee: Boolean(user.heureConfirmee),
       demo: Boolean(user.demo),
+      tutoriel: {
+        cartesVues: Boolean(user.tutoriel?.cartesVues),
+        bullesVues: user.tutoriel?.bullesVues ?? [],
+      },
       reglages: {
         rappelDoux: user.reglages?.rappelDoux !== false,
         indicesVisibles: user.reglages?.indicesVisibles !== false,
@@ -138,6 +143,20 @@ export async function mettreAJour(req: PayloadRequest, userId: string, donnees: 
   if (donnees.reglages) {
     const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
     data.reglages = { ...user.reglages, ...donnees.reglages }
+  }
+  if (donnees.tutoriel) {
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0, req })
+    const { cartesVues = false, bullesVues = [] } = user.tutoriel ?? {}
+    data.tutoriel = donnees.tutoriel.revoir
+      ? { cartesVues: false, bullesVues: [] }
+      : donnees.tutoriel.passer
+        ? { cartesVues: true, bullesVues: [...OngletTutoriel.options] }
+        : {
+            cartesVues: cartesVues || Boolean(donnees.tutoriel.cartesVues),
+            bullesVues: donnees.tutoriel.bulleVue
+              ? [...new Set([...(bullesVues ?? []), donnees.tutoriel.bulleVue])]
+              : (bullesVues ?? []),
+          }
   }
   // Le hook de users recalcule les ouvertures si l'heure ou le fuseau change.
   if (Object.keys(data).length > 0) {

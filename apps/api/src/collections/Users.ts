@@ -124,6 +124,20 @@ export const Users: CollectionConfig = {
       ],
     },
     {
+      // Ce que la personne a déjà vu du tutoriel (cartes du principe, bulles d'onglet).
+      name: 'tutoriel',
+      type: 'group',
+      fields: [
+        { name: 'cartesVues', type: 'checkbox', defaultValue: false },
+        {
+          name: 'bullesVues',
+          type: 'select',
+          hasMany: true,
+          options: ['pourMoi', 'pourToi', 'souvenirs', 'nousDeux'],
+        },
+      ],
+    },
+    {
       // Duo de démo (portfolio) : rien d'irréversible, remis à zéro chaque nuit.
       name: 'demo',
       label: 'Compte de démo',

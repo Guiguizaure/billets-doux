@@ -211,6 +211,10 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  tutoriel?: {
+    cartesVues?: boolean | null;
+    bullesVues?: ('pourMoi' | 'pourToi' | 'souvenirs' | 'nousDeux')[] | null;
+  };
   demo?: ('visiteur' | 'partenaire') | null;
   dernierRappelLe?: string | null;
   essaisCode?: {
@@ -592,6 +596,12 @@ export interface UsersSelect<T extends boolean = true> {
         plateforme?: T;
         vuLe?: T;
         id?: T;
+      };
+  tutoriel?:
+    | T
+    | {
+        cartesVues?: T;
+        bullesVues?: T;
       };
   demo?: T;
   dernierRappelLe?: T;
