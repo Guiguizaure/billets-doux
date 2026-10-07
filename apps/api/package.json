@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev -p 3100",
-    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -p 3100",
+    "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build && node scripts/preparer-standalone.mjs",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation PORT=${PORT:-3100} HOSTNAME=0.0.0.0 node --env-file-if-exists=.env .next/standalone/apps/api/server.js",
     "typecheck": "tsc --noEmit",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "test": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts",
@@ -14,7 +14,8 @@
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "stockage:preparer": "node scripts/preparer-stockage.ts",
-    "demo:creer": "tsx scripts/creer-demo.mts"
+    "demo:creer": "tsx scripts/creer-demo.mts",
+    "admin:creer": "tsx scripts/creer-admin.mts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1146.0",
