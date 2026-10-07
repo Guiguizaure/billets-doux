@@ -33,6 +33,7 @@ import { useConfirmer } from '@/components/Dialogue'
 import { Feuille } from '@/components/Feuille'
 import { Puce } from '@/components/Puce'
 import { Texte } from '@/components/Texte'
+import { useCible } from '@/components/Tutoriel'
 import {
   type CaseJour,
   construireCasesRecues,
@@ -84,6 +85,9 @@ export default function PourMoi() {
   const [scellee, setScellee] = useState<CaseRecue | null>(null)
   const confirmer = useConfirmer()
   const [notifications, setNotifications] = useState<EtatNotifications | null>(null)
+  // Visés par la visite guidée de la démo.
+  const cibleTitre = useCible('titre')
+  const cibleCase = useCible('caseScellee')
 
   useFocusEffect(
     useCallback(() => {
@@ -150,10 +154,11 @@ export default function PourMoi() {
   // Rien encore de l'autre : ni case, ni surprise, ni lettre.
   const vide = cal.cases.length === 0 && cal.surprises === 0 && cal.lettres.length === 0
   const lettresFermees = cal.lettres.filter((l) => l.etat === 'scelle').length
+  const premiereScellee = cases.find((c) => c.etat === 'scelle')?.jour
 
   return (
     <Ecran bas={false}>
-      <View style={styles.titre}>
+      <View ref={cibleTitre} style={styles.titre}>
         <View style={styles.titreTexte}>
           <Texte variante="labelS" couleur={couleurs.texte.encreDouce}>
             {libellesJour(cal.aujourdhui).long.toUpperCase()}
@@ -232,16 +237,21 @@ export default function PourMoi() {
       ) : (
         <View style={styles.cases}>
           {cases.map((c) => (
-            <Case
+            <View
               key={c.jour}
-              etat={ETAT_CASE[c.etat]}
-              jourSemaine={c.titre}
-              jour={c.chiffre}
-              info={c.info}
-              Icone={c.mots[0] ? TYPES_DE_MOT[c.mots[0].type].Icone : undefined}
-              libelleAccessible={c.libelleAccessible}
-              onPress={c.etat === 'vide' ? undefined : () => toucher(c)}
-            />
+              ref={c.jour === premiereScellee ? cibleCase : undefined}
+              collapsable={false}
+            >
+              <Case
+                etat={ETAT_CASE[c.etat]}
+                jourSemaine={c.titre}
+                jour={c.chiffre}
+                info={c.info}
+                Icone={c.mots[0] ? TYPES_DE_MOT[c.mots[0].type].Icone : undefined}
+                libelleAccessible={c.libelleAccessible}
+                onPress={c.etat === 'vide' ? undefined : () => toucher(c)}
+              />
+            </View>
           ))}
         </View>
       )}

@@ -45,7 +45,8 @@ export default function Heure() {
     setEnCours(true)
     setErreur(null)
     try {
-      appliquer(await api.mettreAJour({ heureDecouverte: heure }))
+      const suivant = await api.mettreAJour({ heureDecouverte: heure })
+      appliquer(suivant)
       if (modification) {
         if (router.canGoBack()) router.back()
         else router.replace('/nous-deux')
@@ -53,7 +54,9 @@ export default function Heure() {
       }
       // Puis la question du système ; refusée, une carte la reproposera dans « Pour moi ».
       await demanderNotifications().catch(() => undefined)
-      router.replace('/pour-moi')
+      // Puis le principe en trois cartes, s'il n'a jamais été vu.
+      const { tutoriel, demo } = suivant.utilisateur
+      router.replace(tutoriel.cartesVues || demo ? '/pour-moi' : '/principe')
     } catch (e) {
       setErreur(messageErreur(e))
       setEnCours(false)

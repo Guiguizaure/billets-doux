@@ -23,6 +23,14 @@ export default function Aiguillage() {
         <Redirect href="/inviter" />
       )
     case 'duo':
-      return <Redirect href={moi?.utilisateur.heureConfirmee ? '/pour-moi' : '/heure'} />
+      if (!moi?.utilisateur.heureConfirmee) return <Redirect href="/heure" />
+      // Puis le principe en trois cartes, une seule fois (pas pour la démo).
+      return (
+        <Redirect
+          href={
+            moi.utilisateur.tutoriel.cartesVues || moi.utilisateur.demo ? '/pour-moi' : '/principe'
+          }
+        />
+      )
   }
 }

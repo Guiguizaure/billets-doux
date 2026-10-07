@@ -8,7 +8,7 @@ import Mot from '@/assets/icons/Mot.svg'
 import Photo from '@/assets/icons/Photo.svg'
 import Plume from '@/assets/icons/Plume.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
-import { Bulle, type VarianteBulle } from '@/components/Bulle'
+import { Bulle, LARGEUR_BULLE } from '@/components/Bulle'
 import { Case } from '@/components/Case'
 import { Section } from '@/components/Section'
 import { Texte } from '@/components/Texte'
@@ -18,7 +18,6 @@ import { couleurs } from '@/theme/tokens'
 /** Maquette d'écran : 380 × 620, positions connues des éléments visés. */
 const L = 380
 const H = 620
-const LARGEUR_BULLE = 340
 type Cadre = { x: number; y: number; l: number; h: number }
 const CIBLES: Record<NonNullable<CibleVisite>, Cadre> = {
   titre: { x: 12, y: 28, l: 230, h: 44 },
@@ -27,23 +26,21 @@ const CIBLES: Record<NonNullable<CibleVisite>, Cadre> = {
   ongletSouvenirs: { x: 190, y: H - 62, l: 95, h: 56 },
 }
 
-/** Étape 8 : deux styles de bulle, sur la vraie visite guidée de la démo. */
+/** Étape 8 : le style de bulle retenu, sur la vraie visite guidée de la démo. */
 export function SectionTutoriel() {
   return (
-    <Section titre="Étape 8 · Tutoriel : deux styles de bulle (à choisir)">
+    <Section titre="Étape 8 · Tutoriel (style retenu)">
       <Texte variante="corpsS" couleur={couleurs.texte.encreDouce}>
-        Visite guidée de la démo (5 bulles), puis une bulle d’onglet. « Passer » recommence ici la
-        visite, pour pouvoir la rejouer.
+        Carte pointée, voile léger et anneau sur l’élément, timbre-lune et phrase manuscrite. Visite
+        guidée de la démo (5 bulles), puis une bulle d’onglet. « Passer » recommence ici la visite,
+        pour pouvoir la rejouer.
       </Texte>
-      <View style={styles.grille}>
-        <Demo variante="carte" titre="A · Carte pointée (voile léger, anneau sur l’élément)" />
-        <Demo variante="etiquette" titre="B · Étiquette (papier ombre, timbre, manuscrit)" />
-      </View>
+      <Demo />
     </Section>
   )
 }
 
-function Demo({ variante, titre }: { variante: VarianteBulle; titre: string }) {
+function Demo() {
   const [etape, setEtape] = useState(0)
   const visite = etape < VISITE_DEMO.length
   const pas = VISITE_DEMO[Math.min(etape, VISITE_DEMO.length - 1)]!
@@ -57,11 +54,10 @@ function Demo({ variante, titre }: { variante: VarianteBulle; titre: string }) {
 
   return (
     <View style={styles.fiche}>
-      <Texte variante="labelM">{titre}</Texte>
       <View style={styles.ecran}>
         <Maquette />
-        {visite && variante === 'carte' ? <View style={styles.voile} pointerEvents="none" /> : null}
-        {cible && variante === 'carte' ? (
+        <View style={styles.voile} pointerEvents="none" />
+        {cible ? (
           <View
             pointerEvents="none"
             style={[
@@ -78,13 +74,12 @@ function Demo({ variante, titre }: { variante: VarianteBulle; titre: string }) {
             !cible
               ? { top: visite ? H / 2 - 90 : 96 + 128 + 4 }
               : enBas
-                ? { bottom: H - cible.y + 2 }
-                : { top: cible.y + cible.h + 2 },
+                ? { bottom: H - cible.y + 6 }
+                : { top: cible.y + cible.h + 6 },
           ]}
         >
           {visite ? (
             <Bulle
-              variante={variante}
               texte={pas.texte}
               etape={etape + 1}
               total={VISITE_DEMO.length}
@@ -96,11 +91,11 @@ function Demo({ variante, titre }: { variante: VarianteBulle; titre: string }) {
             />
           ) : (
             <Bulle
-              variante={variante}
               texte={bulleOnglet('pourMoi', 'Lina', '8 h')}
               fleche={null}
               libelleSuivant="Compris"
               onSuivant={() => setEtape(0)}
+              onPasser={() => setEtape(0)}
             />
           )}
         </View>
@@ -167,11 +162,6 @@ function Maquette() {
 }
 
 const styles = StyleSheet.create({
-  grille: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 24,
-  },
   fiche: {
     gap: 8,
   },

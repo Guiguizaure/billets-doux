@@ -25,6 +25,7 @@ import { Interrupteur } from '@/components/Interrupteur'
 import { CarteReglages, LigneReglage } from '@/components/LigneReglage'
 import { LienTexte } from '@/components/LienTexte'
 import { Texte } from '@/components/Texte'
+import { useRevoirTutoriel } from '@/components/Tutoriel'
 import { api } from '@/lib/client'
 import { exporterSouvenirs } from '@/lib/export'
 import { messageErreur } from '@/lib/formulaires'
@@ -48,6 +49,7 @@ export default function NousDeux() {
   const [erreur, setErreur] = useState<string | null>(null)
   const [feuille, setFeuille] = useState<'joker' | 'retrouvailles' | 'fermer' | null>(null)
   const [exportEnCours, setExportEnCours] = useState(false)
+  const revoirTutoriel = useRevoirTutoriel()
 
   const charger = useCallback(async () => {
     try {
@@ -230,6 +232,12 @@ export default function NousDeux() {
       </CarteReglages>
 
       <View style={styles.liens}>
+        {revoirTutoriel ? (
+          <LienTexte
+            libelle="Revoir le tutoriel"
+            onPress={() => void revoirTutoriel().catch((e: unknown) => setErreur(messageErreur(e)))}
+          />
+        ) : null}
         <LienTexte
           libelle={demo ? 'Quitter la démo' : 'Se déconnecter'}
           onPress={() => void deconnecter()}

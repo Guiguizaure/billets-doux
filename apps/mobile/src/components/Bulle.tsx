@@ -8,16 +8,16 @@ import { couleurs, rayons } from '@/theme/tokens'
 import { Bouton } from './Bouton'
 import { Texte } from './Texte'
 
-export type VarianteBulle = 'carte' | 'etiquette'
+/** Largeur maximale d'une bulle (la flèche se décale pour viser l'élément). */
+export const LARGEUR_BULLE = 340
 
 /**
- * Une bulle du tutoriel : une phrase, « Suivant » (ou « Terminer », « Compris ») et « Passer ».
- * - `carte` : carte crème bordée de « ligne », petite flèche vers l'élément ;
- * - `etiquette` : étiquette papier ombre, timbre-lune en coin, écriture manuscrite.
- * Le lecteur d'écran se place sur la bulle et la lit ; avec animations réduites, simple fondu.
+ * Une bulle du tutoriel (style choisi à l'étape 8) : carte crème bordée de « ligne », petite
+ * flèche vers l'élément, timbre-lune en coin et phrase manuscrite ; « Suivant » (ou
+ * « Terminer », « Compris ») et « Passer ». Le lecteur d'écran se place sur la bulle et la lit ;
+ * avec animations réduites, simple fondu.
  */
 export function Bulle({
-  variante,
   texte,
   etape,
   total,
@@ -27,7 +27,6 @@ export function Bulle({
   onSuivant,
   onPasser,
 }: {
-  variante: VarianteBulle
   texte: string
   /** Position dans la visite (1, 2…) ; absente pour une bulle seule. */
   etape?: number
@@ -51,39 +50,25 @@ export function Bulle({
   }, [texte])
 
   const entree = reduit ? FadeIn : fleche === 'bas' ? FadeInDown : FadeInUp
-  const fond = variante === 'carte' ? couleurs.fond.carte : couleurs.fond.papierOmbre
 
   return (
     <Animated.View entering={entree.duration(220)} style={styles.colonne}>
-      {fleche === 'haut' ? (
-        <Fleche couleur={fond} carte={variante === 'carte'} x={flecheX} haut />
-      ) : null}
+      {fleche === 'haut' ? <Fleche x={flecheX} haut /> : null}
       <View
         ref={ref}
         accessible
         accessibilityRole="alert"
         accessibilityLabel={etape && total ? `${etape} sur ${total}. ${texte}` : texte}
-        style={[styles.bulle, variante === 'carte' ? styles.carte : styles.etiquette, styles.haut]}
+        style={[styles.carte, styles.haut]}
       >
-        {variante === 'etiquette' ? (
-          <View style={styles.timbre} accessible={false}>
-            <TimbreLune width={30} height={37} />
-          </View>
-        ) : null}
-        <Texte
-          variante={variante === 'etiquette' ? 'manuscritM' : 'corpsM'}
-          style={variante === 'etiquette' ? styles.texteEtiquette : null}
-        >
+        <View style={styles.timbre} accessible={false}>
+          <TimbreLune width={30} height={37} />
+        </View>
+        <Texte variante="manuscritM" style={styles.texte}>
           {texte}
         </Texte>
       </View>
-      <View
-        style={[
-          styles.actions,
-          variante === 'carte' ? styles.carte : styles.etiquette,
-          styles.pied,
-        ]}
-      >
+      <View style={[styles.carte, styles.pied]}>
         {etape && total ? (
           <Texte variante="labelS" couleur={couleurs.texte.encreDouce} accessible={false}>
             {etape} / {total}
@@ -98,23 +83,13 @@ export function Bulle({
           <Bouton libelle={libelleSuivant} compact onPress={onSuivant} />
         </View>
       </View>
-      {fleche === 'bas' ? <Fleche couleur={fond} carte={variante === 'carte'} x={flecheX} /> : null}
+      {fleche === 'bas' ? <Fleche x={flecheX} /> : null}
     </Animated.View>
   )
 }
 
-/** Petite flèche (carré tourné) qui pointe vers l'élément. */
-function Fleche({
-  couleur,
-  carte,
-  x,
-  haut,
-}: {
-  couleur: string
-  carte: boolean
-  x: number
-  haut?: boolean
-}) {
+/** Petite flèche (carré tourné, bordé de « ligne ») qui pointe vers l'élément. */
+function Fleche({ x, haut }: { x: number; haut?: boolean }) {
   return (
     <View
       style={[
@@ -126,11 +101,8 @@ function Fleche({
       <View
         style={[
           styles.fleche,
-          { backgroundColor: couleur },
           haut ? styles.flechePlaceHaut : styles.flechePlaceBas,
-          // Bordure seulement pour la carte (l'étiquette n'en a pas).
-          carte && styles.flecheBordure,
-          carte && (haut ? styles.bordureHaut : styles.bordureBas),
+          haut ? styles.bordureHaut : styles.bordureBas,
         ]}
       />
     </View>
@@ -140,39 +112,35 @@ function Fleche({
 const styles = StyleSheet.create({
   colonne: {
     width: '100%',
-    maxWidth: 340,
-  },
-  bulle: {
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 6,
-    borderTopLeftRadius: rayons.carte,
-    borderTopRightRadius: rayons.carte,
-  },
-  // Bulle en deux blocs (texte, puis boutons) : pas de trait entre les deux.
-  haut: {
-    borderBottomWidth: 0,
-    boxShadow: 'none',
-  },
-  pied: {
-    borderTopWidth: 0,
-    borderBottomLeftRadius: rayons.carte,
-    borderBottomRightRadius: rayons.carte,
+    maxWidth: LARGEUR_BULLE,
   },
   carte: {
     backgroundColor: couleurs.fond.carte,
     borderWidth: 1,
     borderColor: couleurs.trait.ligne,
-    boxShadow: '0px 12px 30px -12px rgba(42, 35, 70, 0.35)',
   },
-  // Sans voile : l'ombre la détache de ce qu'elle recouvre (une case de même couleur…).
-  etiquette: {
-    backgroundColor: couleurs.fond.papierOmbre,
-    boxShadow: '0px 12px 30px -12px rgba(42, 35, 70, 0.35)',
+  // Bulle en deux blocs (phrase, puis boutons) : pas de trait entre les deux.
+  haut: {
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 6,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: rayons.carte,
+    borderTopRightRadius: rayons.carte,
   },
-  texteEtiquette: {
-    paddingRight: 34,
+  pied: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    paddingTop: 4,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: rayons.carte,
+    borderBottomRightRadius: rayons.carte,
+    // L'ombre la détache de ce qu'elle recouvre (une case de même couleur…).
+    boxShadow: '0px 12px 30px -12px rgba(42, 35, 70, 0.35)',
   },
   timbre: {
     position: 'absolute',
@@ -180,13 +148,8 @@ const styles = StyleSheet.create({
     right: 10,
     transform: [{ rotate: '8deg' }],
   },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingBottom: 12,
-    paddingTop: 4,
+  texte: {
+    paddingRight: 34,
   },
   boutons: {
     flexDirection: 'row',
@@ -208,8 +171,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     transform: [{ rotate: '45deg' }],
-  },
-  flecheBordure: {
+    backgroundColor: couleurs.fond.carte,
     borderColor: couleurs.trait.ligne,
   },
   flechePlaceHaut: {

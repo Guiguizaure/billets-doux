@@ -10,6 +10,7 @@ import Plume from '@/assets/icons/Plume.svg'
 import { couleurs } from '@/theme/tokens'
 
 import { Texte } from './Texte'
+import { useEnregistrerCible } from './Tutoriel'
 
 const icones: Record<string, FC<SvgProps>> = {
   'pour-moi': Calendrier,
@@ -20,6 +21,8 @@ const icones: Record<string, FC<SvgProps>> = {
 
 /** Composant Figma « Barre d'onglets » : onglet actif en rouge cachet, les autres en encre douce. */
 export function BarreOnglets({ state, descriptors, navigation, insets }: BottomTabBarProps) {
+  // Le tutoriel pointe les onglets.
+  const cible = useEnregistrerCible()
   return (
     <View style={[styles.barre, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View accessibilityRole="tablist" style={styles.onglets}>
@@ -39,6 +42,7 @@ export function BarreOnglets({ state, descriptors, navigation, insets }: BottomT
           return (
             <Pressable
               key={route.key}
+              ref={cible?.(`onglet:${route.name}`)}
               onPress={appuyer}
               accessibilityRole="tab"
               accessibilityState={{ selected: actif }}
