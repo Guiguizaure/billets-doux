@@ -18,6 +18,7 @@ import {
 
 import { api, jeton } from '@/lib/client'
 import { retirerCetAppareil } from '@/lib/notifications'
+import { rafraichirSession } from '@/lib/rafraichirSession'
 import { sessionExpiree } from '@/lib/reseau'
 import { stockageJeton } from '@/lib/stockage'
 
@@ -172,22 +173,33 @@ function phaseDe(etat: Etat): Phase {
   return duo && (duo.statut === 'actif' || duo.statut === 'pause') ? 'duo' : 'sansDuo'
 }
 
-/** Au lancement : reprend le jeton enregistré, le prolonge et charge le compte. */
+/** Une vraie session expirée ou révoquée : la seule raison de déconnecter. */
+const estExpiree = (e: unknown) => e instanceof ErreurApi && e.statut === 401
+
+/**
+ * Au lancement : reprend le jeton enregistré, le prolonge et charge le compte. Si le
+ * rafraîchissement échoue pour une autre raison (serveur, réseau), le jeton actuel, encore
+ * valable, suffit : on charge le compte avec.
+ */
 async function demarrer(): Promise<Etat> {
   const enregistre = await stockageJeton.lire()
   if (!enregistre) return { statut: 'visiteur' }
   jeton.definir(enregistre)
   try {
-    const session = await api.rafraichir()
-    jeton.definir(session.jeton)
-    await stockageJeton.ecrire(session.jeton)
+    await rafraichirSession()
+  } catch (e) {
+    if (estExpiree(e)) return oublierAuDemarrage()
+  }
+  try {
     return { statut: 'connecte', moi: await api.moi() }
   } catch (e) {
-    if (e instanceof ErreurApi && e.statut === 401) {
-      jeton.definir(null)
-      await stockageJeton.effacer()
-      return { statut: 'visiteur' }
-    }
+    if (estExpiree(e)) return oublierAuDemarrage()
     return { statut: 'horsLigne' }
   }
+}
+
+async function oublierAuDemarrage(): Promise<Etat> {
+  jeton.definir(null)
+  await stockageJeton.effacer()
+  return { statut: 'visiteur' }
 }
