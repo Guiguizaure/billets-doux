@@ -60,6 +60,12 @@ La base `billets-doux` apparaît d'elle-même au premier démarrage de l'API (co
 
 1. _R2 → Create bucket_ : nom **`billets-doux-medias-eu`**, _Location_ : **juridiction Union
    européenne**. Le bucket reste privé : pas de domaine public, pas d'accès `r2.dev`.
+
+   > La juridiction se choisit **à la création** et ne se change plus ensuite : un bucket créé sans
+   > elle doit être recréé (c'est ce qui a été fait le 7 octobre 2026, avant tout envoi de fichier).
+   > C'est elle qui permet d'écrire dans la page de confidentialité que les photos et les vocaux sont
+   > stockés dans l'Union européenne.
+
 2. _R2 → Manage API tokens → Create API token_ : permission **Object Read & Write**, limitée à ce
    bucket. Notez l'_Access Key ID_ et la _Secret Access Key_ (affichée une seule fois).
 3. **Adresse S3** : _bucket → Settings → S3 API_. Pour un bucket en juridiction UE, elle contient
@@ -216,7 +222,17 @@ Si « Base ciblée » affiche `127.0.0.1:27018`, la variable n'a pas été prise
 
 ## 6. Cloudflare Pages : la version web
 
-_Workers & Pages → Create → Pages → Connect to Git_, dépôt `Guiguizaure/billets-doux` :
+Avant de créer le projet :
+
+- **Accès au dépôt** : l'appli GitHub de Cloudflare ne voit que les dépôts qu'on lui ouvre. Pour un
+  nouveau dépôt, sur GitHub : _Settings → Applications → Cloudflare Workers and Pages → Configure →
+  Repository access_, puis ajoutez `Guiguizaure/billets-doux`. Sans cet accès, le dépôt n'apparaît
+  pas dans la liste, ou le build ne se lance pas.
+- **Un projet Pages, pas un Worker** : _Workers & Pages → Create_ propose d'abord un Worker.
+  Choisissez l'onglet **Pages**, puis _Connect to Git_. Un Worker n'a ni ce réglage de build, ni les
+  préversions par branche, ni le fichier `_headers`.
+
+_Workers & Pages → Create → onglet Pages → Connect to Git_, dépôt `Guiguizaure/billets-doux` :
 
 | Réglage                              | Valeur                                                          |
 | ------------------------------------ | --------------------------------------------------------------- |
@@ -234,7 +250,9 @@ avec un message clair. Les en-têtes (sécurité, cache, `noindex` sur `/lab`) v
 
 **Domaine** (une fois l'API en ligne) : _projet → Custom domains_ → `billetsdoux.app`.
 **www** : un enregistrement `CNAME www → billetsdoux.app` en _Proxied_, puis _Rules → Redirect
-Rules_, modèle **« Redirect from WWW to root »** (301).
+Rules_, modèle **« Redirect from WWW to root »** (301). Cloudflare affiche un avertissement en
+enregistrant la règle : on peut l'ignorer, la redirection fonctionne. `pnpm verifier:prod` le
+confirme (`www` doit répondre 301 vers `https://billetsdoux.app`, pas 200).
 
 Rappel : les préversions se testent **uniquement avec le duo de démo**.
 
@@ -298,6 +316,24 @@ production) :
 - [ ] Le lendemain : un dossier `sauvegardes/<date>/` dans le bucket, avec `manifeste.json`.
 - [ ] Un compte jetable supprimé depuis `billetsdoux.app/supprimer-mon-compte`.
 - [ ] `heroku logs --tail` sans erreur pendant ces essais.
+
+### État de la mise en ligne (7 octobre 2026)
+
+Fait :
+
+- API sur `https://api.billetsdoux.app` (Heroku, dyno Basic, certificat Let's Encrypt, proxy
+  Cloudflare, « Always Use HTTPS »), base `billets-doux` sur Cluster0, bucket
+  `billets-doux-medias-eu` ;
+- compte administrateur et duo de démo (19 mots) créés en production ;
+- version web sur `https://billetsdoux.app` (Pages, `www` redirigé en 301) ;
+- `pnpm verifier:prod --avec-demo` : tous les contrôles passent ;
+- APK de production (profil `preview`) construit.
+
+Reste à faire :
+
+- [ ] **Le test à deux sur nos deux téléphones**, avec l'APK de production et nos vrais comptes :
+      toute la liste ci-dessus, de l'inscription à la suppression d'un compte jetable.
+- [ ] Le lendemain de la mise en ligne : la première sauvegarde de la nuit dans le bucket.
 
 ---
 
