@@ -14,6 +14,7 @@ export const SECTIONS: Section[] = [
     paragraphes: [
       'Billets doux est édité par Guillaume Salle (Webjuno, auto-entrepreneur), responsable du traitement de tes données (voir les mentions légales).',
       `Pour toute question ou demande sur tes données : ${CONTACT}.`,
+      'Billets doux est réservé aux personnes de 18 ans et plus : à l’inscription, tu le confirmes en cochant « J’ai 18 ans ou plus ».',
     ],
   },
   {
@@ -47,7 +48,7 @@ export const SECTIONS: Section[] = [
     paragraphes: [
       'Base de données : MongoDB Atlas, sur des serveurs Amazon Web Services à Paris (France).',
       'Serveur de l’appli : Heroku (Salesforce), dans sa région Europe.',
-      'Photos, vocaux et sauvegardes : Cloudflare R2, dans un espace privé.',
+      'Photos, vocaux et sauvegardes : Cloudflare R2, dans un espace privé situé dans l’Union européenne.',
       'Version web et nom de domaine : Cloudflare.',
       'Notifications : Expo (650 Industries) et Google Firebase Cloud Messaging, qui acheminent la notification jusqu’à ton téléphone. Ils ne reçoivent que l’identifiant de notification de ton téléphone et le texte de la notification.',
       'Expo est situé aux États-Unis, et Google peut traiter ces données dans n’importe lequel de ses centres de données, aux États-Unis compris. Ces transferts reposent sur le cadre de protection des données UE–États-Unis (Data Privacy Framework), auquel Expo et Google ont adhéré ; pour Firebase, Google applique en outre les clauses contractuelles types de la Commission européenne.',

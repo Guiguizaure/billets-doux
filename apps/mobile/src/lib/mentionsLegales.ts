@@ -11,7 +11,8 @@ export const SECTIONS_MENTIONS: Section[] = [
     paragraphes: [
       'Guillaume Salle, entrepreneur individuel (auto-entrepreneur), nom commercial Webjuno.',
       'SIRET : 931 695 365 00011.',
-      'Adresse : 136 rue Esteve Haut, 83140 Six-Fours-les-Plages, France.',
+      'Adresse : 136 rue Estève Haut, 83140 Six-Fours-les-Plages (Var), France.',
+      'Téléphone : 07 83 31 43 93.',
       'Contact : contact@billetsdoux.app.',
       'Directeur de la publication : Guillaume Salle.',
     ],

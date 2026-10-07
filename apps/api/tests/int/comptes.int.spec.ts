@@ -40,6 +40,7 @@ describe('inscription et connexion', () => {
         email: leo.email,
         motDePasse: MOT_DE_PASSE,
         fuseauHoraire: 'Europe/Paris',
+        majeur: true,
       }),
     ).rejects.toMatchObject({ statut: 409, champs: { email: expect.any(String) } })
   })
@@ -51,6 +52,7 @@ describe('inscription et connexion', () => {
         email: 'zoe-fuseau@exemple.fr',
         motDePasse: MOT_DE_PASSE,
         fuseauHoraire: 'Mars/Olympus',
+        majeur: true,
       }),
     ).rejects.toMatchObject({ statut: 400 })
   })
