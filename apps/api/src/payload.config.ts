@@ -19,6 +19,7 @@ import { creerDemo } from './services/demo'
 import { releverRecus } from './services/notifications'
 import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
 import { lireOrigines } from './lib/origines'
+import { supprimerExportsAnciens } from './services/duree'
 import { sauvegarder } from './services/sauvegarde'
 
 const filename = fileURLToPath(import.meta.url)
@@ -94,6 +95,12 @@ export default buildConfig({
           const { nom, supprimees } = await sauvegarder(req.payload)
           return { output: { nom, supprimees: supprimees.length } }
         },
+      },
+      {
+        // Les archives d'export ne restent que 24 heures (politique de confidentialité).
+        slug: 'exportsExpires',
+        schedule: [{ cron: '45 3 * * *', queue: 'minute' }],
+        handler: async () => ({ output: { supprimes: await supprimerExportsAnciens() } }),
       },
       {
         slug: 'recusPush',
