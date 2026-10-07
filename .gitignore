@@ -29,3 +29,6 @@ coverage/
 
 # Configuration Firebase (envoyée à EAS comme variable fichier, jamais versionnée)
 google-services.json
+
+# Cloudflare Pages en local (wrangler pages dev)
+.wrangler/

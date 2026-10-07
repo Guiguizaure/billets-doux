@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
     "build": "expo export --platform web --platform android --output-dir dist",
+    "build:web": "node scripts/build-web.mjs",
     "test": "vitest run"
   },
   "dependencies": {

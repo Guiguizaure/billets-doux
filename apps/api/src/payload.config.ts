@@ -18,15 +18,15 @@ import { souvenirsEndpoints } from './endpoints/souvenirs'
 import { creerDemo } from './services/demo'
 import { releverRecus } from './services/notifications'
 import { notifierMotsOuvrables, rappelerAuteurs } from './services/taches'
+import { lireOrigines } from './lib/origines'
 import { sauvegarder } from './services/sauvegarde'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const corsOrigins = (process.env.CORS_ORIGINS ?? '')
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+// Origines exactes et préversions Cloudflare Pages (`https://*.billets-doux.pages.dev`).
+// Payload garde cette liste telle quelle (vérifié dans origines.int.spec.ts).
+const origines = lireOrigines(process.env.CORS_ORIGINS)
 
 export default buildConfig({
   serverURL: process.env.SERVER_URL,
@@ -43,8 +43,9 @@ export default buildConfig({
   },
   collections: [Admins, Users, Duos, Mots, Medias, Reponses, EnvoisPush],
   endpoints: [health, ...comptesEndpoints, ...souvenirsEndpoints],
-  cors: corsOrigins,
-  csrf: corsOrigins,
+  cors: origines.cors,
+  csrf: origines.csrf,
+
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     // Les types générés vivent dans le paquet partagé, pour l'appli comme pour l'API.
