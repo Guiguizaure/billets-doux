@@ -248,6 +248,7 @@ export default function NousDeux() {
             onPress={() => router.push('/compte/supprimer')}
           />
         )}
+        <LienTexte libelle="Confidentialité" onPress={() => router.push('/confidentialite')} />
         {__DEV__ ? (
           <LienTexte libelle="Page de test (développement)" onPress={() => router.push('/lab')} />
         ) : null}
