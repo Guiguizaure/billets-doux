@@ -14,12 +14,19 @@ import { getPayload } from 'payload'
 
 import config from '../src/payload.config.ts'
 import { creerDemo } from '../src/services/demo.ts'
-import { annoncerBase, attendreBasePrete, creerSaisie, lancer } from './lib/cli.mts'
+import {
+  annoncerBase,
+  attendreBasePrete,
+  creerSaisie,
+  exigerStockageCoherent,
+  lancer,
+} from './lib/cli.mts'
 
 lancer(async () => {
   const saisie = creerSaisie()
   try {
     annoncerBase()
+    exigerStockageCoherent()
     if (!process.env.DEMO_MOT_DE_PASSE) throw new Error('DEMO_MOT_DE_PASSE est vide.')
     console.log(`Stockage ciblé : bucket « ${process.env.S3_BUCKET ?? '(vide)'} »`)
     if (!(await saisie.confirmer('Créer (ou remettre à zéro) le duo de démo dans cette base ?'))) {

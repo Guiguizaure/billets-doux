@@ -9,6 +9,28 @@ import readline from 'node:readline'
 import type { MongooseAdapter } from '@payloadcms/db-mongodb'
 import type { Payload } from 'payload'
 
+// Payload démarre ses tâches planifiées à chaque initialisation, même dans un script : lancé
+// depuis le Mac contre la production, un script ne doit jamais en exécuter une (annonces,
+// sauvegarde…). Lu à chaque minute par `shouldAutoRun`.
+process.env.TACHES_DESACTIVEES = '1'
+
+const estLocal = (adresse: string | undefined) =>
+  /\/\/(?:[^@/]*@)?(?:localhost|127\.0\.0\.1|\[::1\])(?::|\/|$)/.test(adresse ?? '')
+
+/**
+ * Base distante (production) mais stockage local (valeurs de dev lues dans .env) : les photos
+ * de la démo ou les sauvegardes partiraient au mauvais endroit. Les variables S3_* de
+ * production doivent être tapées dans le shell avec DATABASE_URI.
+ */
+export const exigerStockageCoherent = () => {
+  if (!estLocal(process.env.DATABASE_URI) && estLocal(process.env.S3_ENDPOINT)) {
+    throw new Error(
+      'base distante mais stockage local (S3_ENDPOINT du .env de dev) : saisis aussi les ' +
+        'variables S3_* de production (voir DEPLOIEMENT.md).',
+    )
+  }
+}
+
 /** Hôte et nom de la base seulement : les identifiants ne s'affichent jamais. */
 export const decrireBase = (uri: string) => {
   const sansIdentifiants = uri.replace(/\/\/[^@/]*@/, '//').split('?')[0]!

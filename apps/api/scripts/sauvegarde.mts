@@ -24,7 +24,13 @@ import {
   restaurer,
   sauvegarder,
 } from '../src/services/sauvegarde.ts'
-import { annoncerBase, attendreBasePrete, creerSaisie, lancer } from './lib/cli.mts'
+import {
+  annoncerBase,
+  attendreBasePrete,
+  creerSaisie,
+  exigerStockageCoherent,
+  lancer,
+} from './lib/cli.mts'
 
 const [commande, ...reste] = process.argv.slice(2)
 const nom = reste.find((a) => !a.startsWith('--'))
@@ -34,6 +40,7 @@ lancer(async () => {
   const saisie = creerSaisie()
   try {
     annoncerBase()
+    exigerStockageCoherent()
     console.log(`Stockage ciblé : bucket « ${process.env.S3_BUCKET ?? '(vide)'} »`)
 
     if (commande === 'faire') {
