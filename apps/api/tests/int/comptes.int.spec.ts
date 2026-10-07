@@ -1,7 +1,7 @@
-import type { Payload } from 'payload'
+import { createLocalReq, type Payload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { connecter, inscrire, mettreAJour, vueMoi } from '@/services/comptes'
+import { connecter, inscrire, mettreAJour, rafraichir, vueMoi } from '@/services/comptes'
 
 import { demarrer, MOT_DE_PASSE, nouvelUtilisateur, requete, viderBase } from './helpers'
 
@@ -122,5 +122,29 @@ describe('tutoriel', () => {
       cartesVues: true,
       bullesVues: ['pourMoi', 'pourToi', 'souvenirs', 'nousDeux'],
     })
+  })
+})
+
+describe('rafraîchissement', () => {
+  /** Une requête authentifiée par le jeton, comme une vraie requête HTTP. */
+  const requeteAvecJeton = async (jeton: string) => {
+    const headers = new Headers({ Authorization: `JWT ${jeton}` })
+    const { user } = await payload.auth({ headers })
+    if (!user) throw new Error('Jeton refusé')
+    const req = await createLocalReq({ user }, payload)
+    return Object.assign(req, { headers, url: 'http://api/api/comptes/rafraichir' })
+  }
+
+  it('deux rafraîchissements simultanés de la même session réussissent tous les deux', async () => {
+    const { session } = await nouvelUtilisateur(payload, 'Camille')
+    const [a, b] = await Promise.all([
+      rafraichir(await requeteAvecJeton(session.jeton)),
+      rafraichir(await requeteAvecJeton(session.jeton)),
+    ])
+    expect(a.jeton).toBeTruthy()
+    expect(b.jeton).toBeTruthy()
+    // Les deux jetons restent valables.
+    await expect(requeteAvecJeton(a.jeton)).resolves.toBeTruthy()
+    await expect(requeteAvecJeton(b.jeton)).resolves.toBeTruthy()
   })
 })

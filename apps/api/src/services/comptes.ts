@@ -15,6 +15,7 @@ import { AuthenticationError, LockedAuth, refreshOperation, ValidationError } fr
 import { ErreurMetier } from '@/lib/erreurs'
 import { fuseauValide } from '@/lib/fuseau'
 import { idDe } from '@/lib/ids'
+import { avecReprise } from '@/lib/transaction'
 
 const COMPTE_EXISTANT = 'Un compte existe déjà avec cette adresse.'
 
@@ -71,9 +72,15 @@ export async function connecter(payload: Payload, donnees: Connexion): Promise<S
   }
 }
 
-/** Nouveau jeton pour la session en cours (appelé au lancement de l'appli). */
+/**
+ * Nouveau jeton pour la session en cours (appelé au lancement de l'appli). Deux
+ * rafraîchissements simultanés de la même session écrivent le même document : celui qui perd
+ * le conflit est rejoué.
+ */
 export async function rafraichir(req: PayloadRequest): Promise<Session> {
-  const resultat = await refreshOperation({ collection: req.payload.collections.users, req })
+  const resultat = await avecReprise(req, () =>
+    refreshOperation({ collection: req.payload.collections.users, req }),
+  )
   return { jeton: resultat.refreshedToken, expire: resultat.exp }
 }
 
