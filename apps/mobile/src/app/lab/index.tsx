@@ -12,6 +12,7 @@ import { SectionFinitions } from '@/lab/SectionFinitions'
 import { SectionPalette } from '@/lab/SectionPalette'
 import { SectionStyles } from '@/lab/SectionStyles'
 import { SectionTransitions } from '@/lab/SectionTransitions'
+import { SectionTutoriel } from '@/lab/SectionTutoriel'
 import { SectionTypo } from '@/lab/SectionTypo'
 import { couleurs } from '@/theme/tokens'
 
@@ -38,6 +39,7 @@ export default function Lab() {
           Temporaire, non indexée, visible en développement seulement. Les choix faits ici
           deviennent les règles de l’appli.
         </Texte>
+        <SectionTutoriel />
         <SectionFinitions />
         <SectionCadre />
         <SectionEtatsVides />
