@@ -1,5 +1,5 @@
 import { type FC, type ReactNode, useEffect } from 'react'
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native'
+import { Pressable, StyleSheet, View } from 'react-native'
 import Animated, {
   cancelAnimation,
   Easing,
@@ -14,8 +14,10 @@ import type { SvgProps } from 'react-native-svg'
 
 import Plus from '@/assets/icons/Plus.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
+import { margeCase } from '@/lib/grilleCases'
 import { couleurs, ombres, rayons } from '@/theme/tokens'
 
+import { useLargeurCase } from './GrilleCases'
 import { Texte } from './Texte'
 
 export type EtatCase = 'ouverte' | 'aujourdhui' | 'verrouillee' | 'vide' | 'prete'
@@ -42,9 +44,9 @@ export function Case({
   Icone = Vocal,
   onPress,
 }: Props) {
-  // Texte agrandi au-delà de ×1,3 : deux colonnes au lieu de trois, et la case s'allonge.
-  const { fontScale } = useWindowDimensions()
-  const taille = fontScale > 1.3 ? styles.large : null
+  // Largeur donnée par la grille (trois colonnes, deux en texte agrandi au-delà de ×1,3).
+  const largeur = useLargeurCase()
+  const taille = { width: largeur, padding: margeCase(largeur) }
   const aujourdhui = etat === 'aujourdhui'
   const vide = etat === 'vide'
   const couleurDate = aujourdhui
@@ -142,16 +144,10 @@ function Respire({ actif, children }: { actif: boolean; children: ReactNode }) {
 
 const styles = StyleSheet.create({
   case: {
-    width: 111,
     minHeight: 128,
     gap: 10,
-    padding: 12,
     borderRadius: rayons.case,
     justifyContent: 'space-between',
-  },
-  /** Deux colonnes dans les 353 dp de la grille. */
-  large: {
-    width: 171,
   },
   ouverte: {
     backgroundColor: couleurs.fond.carte,

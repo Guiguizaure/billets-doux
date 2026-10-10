@@ -93,8 +93,11 @@ export default function Bienvenue() {
             </View>
           ))}
         </View>
-        <LienTexte libelle="Confidentialité" onPress={() => router.push('/confidentialite')} />
-        <LienTexte libelle="Mentions légales" onPress={() => router.push('/mentions-legales')} />
+        {/* Sur une ligne : l'écran tient dans 852 dp (cadre web, téléphone de référence). */}
+        <View style={styles.liens}>
+          <LienTexte libelle="Confidentialité" onPress={() => router.push('/confidentialite')} />
+          <LienTexte libelle="Mentions légales" onPress={() => router.push('/mentions-legales')} />
+        </View>
         {__DEV__ ? (
           <LienTexte libelle="Page de test (développement)" onPress={() => router.push('/lab')} />
         ) : null}
@@ -119,6 +122,13 @@ const styles = StyleSheet.create({
   promesses: {
     flexDirection: 'row',
     gap: 12,
+  },
+  liens: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    columnGap: 24,
+    rowGap: 12,
   },
   promesse: {
     width: 104,
