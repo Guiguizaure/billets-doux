@@ -14,6 +14,7 @@ import type { SvgProps } from 'react-native-svg'
 
 import Plus from '@/assets/icons/Plus.svg'
 import Vocal from '@/assets/icons/Vocal.svg'
+import { margeCase } from '@/lib/grilleCases'
 import { couleurs, ombres, rayons } from '@/theme/tokens'
 
 import { useLargeurCase } from './GrilleCases'
@@ -44,7 +45,8 @@ export function Case({
   onPress,
 }: Props) {
   // Largeur donnée par la grille (trois colonnes, deux en texte agrandi au-delà de ×1,3).
-  const taille = { width: useLargeurCase() }
+  const largeur = useLargeurCase()
+  const taille = { width: largeur, padding: margeCase(largeur) }
   const aujourdhui = etat === 'aujourdhui'
   const vide = etat === 'vide'
   const couleurDate = aujourdhui
@@ -144,7 +146,6 @@ const styles = StyleSheet.create({
   case: {
     minHeight: 128,
     gap: 10,
-    padding: 12,
     borderRadius: rayons.case,
     justifyContent: 'space-between',
   },

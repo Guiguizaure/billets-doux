@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { colonnesCases, ECART_CASES, largeurCase } from './grilleCases'
+import { colonnesCases, ECART_CASES, largeurCase, margeCase } from './grilleCases'
 
 // Largeur de la grille = largeur de l'écran − 2 × 20 dp de marge (Ecran).
 const grille = (ecran: number) => ecran - 40
@@ -36,5 +36,13 @@ describe('grille du calendrier', () => {
     expect(largeurCase(grille(390), 1)).toBe(110)
     expect(largeurCase(grille(412), 1)).toBe(117)
     expect(largeurCase(grille(360), 1.5)).toBe(155)
+  })
+
+  it('resserre la marge intérieure des cases plus étroites que le Figma', () => {
+    expect(margeCase(largeurCase(grille(360), 1))).toBe(10)
+    expect(margeCase(largeurCase(grille(390), 1))).toBe(10)
+    expect(margeCase(largeurCase(grille(393), 1))).toBe(12)
+    expect(margeCase(largeurCase(grille(412), 1))).toBe(12)
+    expect(margeCase(largeurCase(grille(360), 1.5))).toBe(12)
   })
 })

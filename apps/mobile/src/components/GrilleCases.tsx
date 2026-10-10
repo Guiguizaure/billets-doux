@@ -1,7 +1,7 @@
 import { createContext, type ReactNode, useContext, useState } from 'react'
 import { type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle } from 'react-native'
 
-import { ECART_CASES, largeurCase } from '@/lib/grilleCases'
+import { ECART_CASES, LARGEUR_CASE_FIGMA, largeurCase } from '@/lib/grilleCases'
 
 /** Largeur d'écran au-delà de laquelle Ecran cesse de s'élargir (maxWidth), marges comprises. */
 const LARGEUR_MAX_ECRAN = 480
@@ -34,7 +34,7 @@ export function GrilleCases({
 export function useLargeurCase() {
   const largeur = useContext(LargeurCase)
   const { fontScale } = useWindowDimensions()
-  return largeur ?? largeurCase(353, fontScale)
+  return largeur ?? largeurCase(3 * LARGEUR_CASE_FIGMA + 2 * ECART_CASES, fontScale)
 }
 
 const styles = StyleSheet.create({

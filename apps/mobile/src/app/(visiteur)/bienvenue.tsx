@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     columnGap: 24,
+    rowGap: 12,
   },
   promesse: {
     width: 104,
