@@ -26,6 +26,7 @@ import { BandeauPause } from '@/components/BandeauPause'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { CasesFantomes } from '@/components/CasesFantomes'
+import { GrilleCases } from '@/components/GrilleCases'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
 import { EtatVide } from '@/components/EtatVide'
@@ -235,7 +236,7 @@ export default function PourMoi() {
           texte={`Les mots de ${prenom} apparaîtront ici, case par case. Tu verras le jour, jamais le contenu avant l’heure.`}
         />
       ) : (
-        <View style={styles.cases}>
+        <GrilleCases>
           {cases.map((c) => (
             <View
               key={c.jour}
@@ -253,7 +254,7 @@ export default function PourMoi() {
               />
             </View>
           ))}
-        </View>
+        </GrilleCases>
       )}
 
       {cal.lettres.length > 0 ? (
@@ -435,11 +436,6 @@ const styles = StyleSheet.create({
   },
   flex: {
     flex: 1,
-  },
-  cases: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
   },
   lettres: {
     flexDirection: 'row',

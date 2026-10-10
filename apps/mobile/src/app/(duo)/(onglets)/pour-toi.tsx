@@ -23,6 +23,7 @@ import { CarteTampon } from '@/components/CarteTampon'
 import { Bouton } from '@/components/Bouton'
 import { BoutonRond } from '@/components/BoutonRond'
 import { CasesFantomes } from '@/components/CasesFantomes'
+import { GrilleCases } from '@/components/GrilleCases'
 import { Case, type EtatCase } from '@/components/Case'
 import { Ecran } from '@/components/Ecran'
 import { EtatVide } from '@/components/EtatVide'
@@ -241,7 +242,7 @@ export default function PourToi() {
             </Texte>
           ))}
 
-          <View style={styles.cases}>
+          <GrilleCases>
             {cases.map((c) => {
               const premier = c.mots[0]
               return (
@@ -263,7 +264,7 @@ export default function PourToi() {
                 />
               )
             })}
-          </View>
+          </GrilleCases>
 
           <LigneOuvreQuand nombre={resume.lettres} />
         </>
@@ -364,11 +365,6 @@ const styles = StyleSheet.create({
   encartTexte: {
     flex: 1,
     gap: 2,
-  },
-  cases: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
   },
   ouvreQuand: {
     flexDirection: 'row',
